@@ -9,7 +9,8 @@
     "format": "prettier --write src/",
     "check": "run-s check:*",
     "check:format": "prettier --check src/",
-    "check:tsc": "tsc --noEmit"
+    "check:tsc": "tsc --noEmit",
+    "release": "pnpm check && commit-and-tag-version && git push --follow-tags"
   },
   "dependencies": {
     "@toon-format/toon": "^2.1.0",
