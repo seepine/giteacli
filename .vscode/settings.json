@@ -1,0 +1,22 @@
+{
+  // 保存时格式化
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // 从不展示扩展缩写
+  "emmet.showExpandedAbbreviation": "never",
+  // 关闭代码区域小地图
+  "editor.minimap.enabled": false,
+  // 代码过长换行
+  "editor.wordWrap": "on",
+  "editor.indentSize": 2,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  // 开启文件折叠
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    // 把大部分配置文件都折叠到package.json里
+    "package.json": "yarn.lock, pnpm-lock.yaml, package-lock.json, .npmrc, .dockerignore, .editorconfig, .prettierrc, tsconfig.json, nodemon.json, *.config.ts",
+    ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*"
+  }
+}

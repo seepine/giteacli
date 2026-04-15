@@ -1,0 +1,67 @@
+{
+  "name": "@seepine/giteacli",
+  "version": "0.1.0",
+  "description": "A CLI tool for interacting with Gitea instances",
+  "type": "module",
+  "scripts": {
+    "cli": "tsx src/index.ts",
+    "build": "tsdown && shx chmod +x dist/index.js",
+    "format": "prettier --write src/",
+    "check": "run-s check:*",
+    "check:format": "prettier --check src/",
+    "check:tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@toon-format/toon": "^2.1.0",
+    "alova": "^3.5.1",
+    "commander": "^14.0.3",
+    "es-toolkit": "^1.45.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@alova/wormhole": "^1.5.0",
+    "@types/node": "^24.12.2",
+    "commit-and-tag-version": "^12.7.1",
+    "npm-run-all2": "^8.0.4",
+    "prettier": "^3.8.2",
+    "shx": "^0.4.0",
+    "tsdown": "^0.21.8",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "bin": {
+    "@seepine/giteacli": "dist/index.js",
+    "giteacli": "dist/index.js",
+    "gitea-cli": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "giteacli",
+    "gitea-cli",
+    "gitea",
+    "tea",
+    "cli"
+  ],
+  "author": "seepine",
+  "license": "MIT",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  }
+}

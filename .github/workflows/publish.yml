@@ -1,0 +1,51 @@
+# 配置
+#   密钥 NPM_TOKEN
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - uses: pnpm/action-setup@v5
+        name: Install pnpm
+        with:
+          cache: true
+
+      - name: Install
+        run: pnpm install
+
+      - name: Check
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Authenticate with Registry
+        if: ${{ env.NPM_TOKEN !='' }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ./.npmrc
+          echo "git-checks=false" >> ./.npmrc
+          npm whoami
+
+      - name: Publish to npm
+        if: ${{ env.NPM_TOKEN !='' }}
+        run: npm publish
