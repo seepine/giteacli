@@ -264,8 +264,11 @@ export function createPullRequestCommand(cli: Cli) {
       owner: z.string().describe('Repository owner'),
       repo: z.string().describe('Repository name'),
       index: z.number().describe('Pull request index number'),
-      page: z.number().optional().describe('Page number'),
-      limit: z.number().optional().describe('Items per page'),
+      latest: z
+        .boolean()
+        .optional()
+        .default(true)
+        .describe('Get the latest review from each reviewer, default true'),
     }),
     outputSchema: z.array(
       z.object({
@@ -292,9 +295,11 @@ export function createPullRequestCommand(cli: Cli) {
         ),
       }),
     ),
-    async func({ owner, repo, index, page, limit }) {
+    async func({ owner, repo, index, latest }) {
       const gitea = new Gitea()
-      return gitea.listPullRequestReviews(owner, repo, index, { page, limit }) as any
+      return latest
+        ? gitea.listPullRequestReviewsFilterUser(owner, repo, index)
+        : (gitea.listPullRequestReviews(owner, repo, index) as any)
     },
   })
 
