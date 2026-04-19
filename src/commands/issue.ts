@@ -100,10 +100,45 @@ export function createIssueCommand(cli: Cli) {
       limit: z.number().optional().default(30).describe('Items per page, default 30'),
       q: z.string().optional().describe('Search keyword'),
     }),
-    outputSchema: IssueListSchema,
+    outputSchema: z.object({
+      hasNextPage: z.boolean(),
+      matchItems: IssueListSchema,
+    }),
     async func(args) {
       const gitea = new Gitea()
-      return Promise.all((await gitea.searchIssues(args)).map(issueMap))
+      const res = await Promise.all((await gitea.searchIssues(args)).map(issueMap))
+      const userinfo = await gitea.getCurrentUserinfo()
+      return {
+        hasNextPage: res.length !== 0,
+        matchItems: res.filter((item) => {
+          if (args.created !== undefined) {
+            if (args.created === true && item.user?.username !== userinfo.username) {
+              return false
+            }
+            if (args.created === false && item.user?.username === userinfo.username) {
+              return false
+            }
+          }
+          if (args.assigned !== undefined) {
+            const isAssigned = item.assignees?.some(
+              (assignee) => assignee.username === userinfo.username,
+            )
+            if (args.assigned === true && !isAssigned) {
+              return false
+            }
+            if (args.assigned === false && isAssigned) {
+              return false
+            }
+          }
+          if (args.labels) {
+            const labelList = args.labels.split(',').map((item) => item.trim())
+            if (!labelList.every((label) => item.labels?.includes(label))) {
+              return false
+            }
+          }
+          return true
+        }),
+      }
     },
   })
 
