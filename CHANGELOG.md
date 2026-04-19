@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.3](https://github.com/seepine/giteacli/compare/v0.1.2...v0.1.3) (2026-04-19)
+
+
+### Bug Fixes
+
+* **issue:** correct hasNextPage logic in issue list command ([e84f67b](https://github.com/seepine/giteacli/commit/e84f67b8f376018e55d02579c29f27af17457944))
+
 ## [0.1.2](https://github.com/seepine/giteacli/compare/v0.1.1...v0.1.2) (2026-04-19)
 
 
