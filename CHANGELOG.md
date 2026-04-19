@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.4](https://github.com/seepine/giteacli/compare/v0.1.3...v0.1.4) (2026-04-19)
+
+
+### Bug Fixes
+
+* **issue:** sanitize label names by trimming whitespace and removing empty values ([b03a318](https://github.com/seepine/giteacli/commit/b03a318ca63092545fda5e10fe8ca5e9b3435246))
+
 ## [0.1.3](https://github.com/seepine/giteacli/compare/v0.1.2...v0.1.3) (2026-04-19)
 
 
