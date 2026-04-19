@@ -108,8 +108,14 @@ export function createIssueCommand(cli: Cli) {
       const gitea = new Gitea()
       const res = await Promise.all((await gitea.searchIssues(args)).map(issueMap))
       const userinfo = await gitea.getCurrentUserinfo()
+      let hasNextPage = true
+      if (res.length === 0) {
+        hasNextPage = false
+      } else if (res.length < args.limit) {
+        hasNextPage = false
+      }
       return {
-        hasNextPage: res.length !== 0,
+        hasNextPage: hasNextPage,
         matchItems: res.filter((item) => {
           if (args.created !== undefined) {
             if (args.created === true && item.user?.username !== userinfo.username) {
