@@ -45,7 +45,9 @@ const replaceBodyNewlines = (body: string | undefined) => body?.replace(/\\n/g, 
 const issueMap = (issue: Issue): z.infer<typeof IssueSchema> => {
   return {
     ...issue,
-    labels: issue.labels?.map((item) => item.name),
+    labels: (issue.labels || [])
+      .map((item) => item.name?.trim().replace(/[\u200B-\u200D\uFEFF]/g, ''))
+      .filter((item) => (item || '').length > 0),
   } as any
 }
 
@@ -137,7 +139,10 @@ export function createIssueCommand(cli: Cli) {
             }
           }
           if (args.labels) {
-            const labelList = args.labels.split(',').map((item) => item.trim())
+            const labelList = args.labels
+              .split(',')
+              .map((item) => item.trim())
+              .filter((item) => item.length > 0)
             if (!labelList.every((label) => item.labels?.includes(label))) {
               return false
             }

@@ -144,6 +144,7 @@ export class Gitea {
   ) {
     let _data = {
       ...data,
+      name: data.name.trim(),
       exclusive: false,
     }
     if (data.name.includes('/')) {
@@ -166,6 +167,7 @@ export class Gitea {
       ...data,
     }
     if (_data.name) {
+      _data.name = _data.name.trim()
       if (_data.name.includes('/')) {
         _data.exclusive = true
       } else {
