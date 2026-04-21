@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.5](https://github.com/seepine/giteacli/compare/v0.1.4...v0.1.5) (2026-04-21)
+
+
+### Features
+
+* **repo:** add RepoSchema for repository validation and enhance list command with pagination and filtering options ([95e6b0e](https://github.com/seepine/giteacli/commit/95e6b0ef48bf4a01ab6b6e76f4aaecea5131c136))
+
 ## [0.1.4](https://github.com/seepine/giteacli/compare/v0.1.3...v0.1.4) (2026-04-19)
 
 
