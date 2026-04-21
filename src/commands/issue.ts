@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { Gitea } from '../gitea'
 import { Cli } from '../cli'
 import { createIssueCommentCommand } from './issue-comment'
+import { parseRepoFullName } from './repo-full-name'
 import type { Issue } from '@/gitea/api/globals'
 
 const IssueStateSchema = z.enum(['open', 'closed', 'all']).default('open')
@@ -58,14 +59,14 @@ export function createIssueCommand(cli: Cli) {
     command: 'get',
     description: 'Get a single issue by index',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Issue index number'),
     }),
     outputSchema: IssueSchema,
-    async func({ owner, repo, index }) {
+    async func({ repo, index }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return issueMap(await gitea.getIssueByIndex(owner, repo, index))
+      return issueMap(await gitea.getIssueByIndex(owner, repoName, index))
     },
   })
 
@@ -73,8 +74,7 @@ export function createIssueCommand(cli: Cli) {
     command: 'list',
     description: 'List issues in a repository',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       state: IssueStateSchema.optional().describe('Filter by state'),
       labels: z.string().optional().describe('Filter by labels (comma-separated)'),
       q: z.string().optional().describe('Search keyword in title/body'),
@@ -82,10 +82,13 @@ export function createIssueCommand(cli: Cli) {
       limit: z.number().optional().default(30).describe('Items per page, default 30'),
     }),
     outputSchema: IssueListSchema,
-    async func({ owner, repo, state, labels, q, page, limit }) {
+    async func({ repo, state, labels, q, page, limit }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
       return Promise.all(
-        (await gitea.listRepoIssues(owner, repo, { state, labels, q, page, limit })).map(issueMap),
+        (await gitea.listRepoIssues(owner, repoName, { state, labels, q, page, limit })).map(
+          issueMap,
+        ),
       )
     },
   })
@@ -157,8 +160,7 @@ export function createIssueCommand(cli: Cli) {
     command: 'add',
     description: 'Add a new issue',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       title: z.string().describe('Issue title'),
       body: z.string().optional().describe('Issue body/description'),
       labels: z.string().optional().describe('Label names (comma-separated)'),
@@ -171,10 +173,11 @@ export function createIssueCommand(cli: Cli) {
       state: z.string(),
       html_url: z.string(),
     }),
-    async func({ owner, repo, title, body, labels }) {
+    async func({ repo, title, body, labels }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      const labelIds = await gitea.resolveLabelNamesToIds(owner, repo, labels ?? '')
-      return gitea.createIssue(owner, repo, {
+      const labelIds = await gitea.resolveLabelNamesToIds(owner, repoName, labels ?? '')
+      return gitea.createIssue(owner, repoName, {
         title,
         body: replaceBodyNewlines(body),
         labels: labelIds,
@@ -186,8 +189,7 @@ export function createIssueCommand(cli: Cli) {
     command: 'edit',
     description: 'Edit an issue',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Issue index number'),
       title: z.string().optional().describe('Issue title'),
       body: z.string().optional().describe('Issue body/description'),
@@ -201,9 +203,10 @@ export function createIssueCommand(cli: Cli) {
       state: z.string(),
       html_url: z.string(),
     }),
-    func({ owner, repo, index, title, body, state }) {
+    func({ repo, index, title, body, state }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.editIssue(owner, repo, index, {
+      return gitea.editIssue(owner, repoName, index, {
         title,
         body: replaceBodyNewlines(body),
         state,
@@ -215,8 +218,7 @@ export function createIssueCommand(cli: Cli) {
     command: 'add-labels',
     description: 'Add labels to an issue',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Issue index number'),
       labels: z.string().describe('Label names (comma-separated)'),
     }),
@@ -227,10 +229,11 @@ export function createIssueCommand(cli: Cli) {
         color: z.string(),
       }),
     ),
-    async func({ owner, repo, index, labels }) {
+    async func({ repo, index, labels }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      const labelIds = await gitea.resolveLabelNamesToIds(owner, repo, labels)
-      return gitea.addIssueLabels(owner, repo, index, { labels: labelIds ?? [] }) as any
+      const labelIds = await gitea.resolveLabelNamesToIds(owner, repoName, labels)
+      return gitea.addIssueLabels(owner, repoName, index, { labels: labelIds ?? [] }) as any
     },
   })
 
@@ -238,17 +241,17 @@ export function createIssueCommand(cli: Cli) {
     command: 'del-labels',
     description: 'Del labels from an issue',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Issue index number'),
       labels: z.string().describe('Label names (comma-separated)'),
     }),
     outputSchema: z.object({ success: z.literal(true) }),
-    async func({ owner, repo, index, labels }) {
+    async func({ repo, index, labels }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      const labelIds = await gitea.resolveLabelNamesToIds(owner, repo, labels)
+      const labelIds = await gitea.resolveLabelNamesToIds(owner, repoName, labels)
       for (const id of labelIds ?? []) {
-        await gitea.removeIssueLabel(owner, repo, index, id)
+        await gitea.removeIssueLabel(owner, repoName, index, id)
       }
       return { success: true }
     },

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { Gitea } from '../gitea'
 import { Cli } from '../cli'
 import { createPullRequestReviewerCommand } from './pull-request-reviewer'
+import { parseRepoFullName } from './repo-full-name'
 
 const PRStateSchema = z.enum(['open', 'closed', 'all']).default('open')
 const PRSortSchema = z.enum([
@@ -105,17 +106,17 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'list',
     description: 'List pull requests in a repository',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       state: PRStateSchema.optional().describe('Filter by state'),
       sort: PRSortSchema.optional().describe('Sort order'),
       page: z.number().optional().describe('Page number'),
       limit: z.number().optional().default(30).describe('Items per page, default 30'),
     }),
     outputSchema: PRListSchema,
-    async func({ owner, repo, state, sort, page, limit }) {
+    async func({ repo, state, sort, page, limit }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.listPullRequests(owner, repo, { state, sort, page, limit }) as any
+      return gitea.listPullRequests(owner, repoName, { state, sort, page, limit }) as any
     },
   })
 
@@ -140,14 +141,14 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'get',
     description: 'Get a single pull request by index',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Pull request index number'),
     }),
     outputSchema: PRSchema,
-    async func({ owner, repo, index }) {
+    async func({ repo, index }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.getPullRequestByIndex(owner, repo, index) as any
+      return gitea.getPullRequestByIndex(owner, repoName, index) as any
     },
   })
 
@@ -155,8 +156,7 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'add',
     description: 'Create a new pull request',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       title: z.string().describe('Pull request title'),
       head: z.string().describe('Source branch (head)'),
       base: z.string().describe('Target branch (base)'),
@@ -172,13 +172,14 @@ export function createPullRequestCommand(cli: Cli) {
       state: z.string(),
       html_url: z.string(),
     }),
-    async func({ owner, repo, title, head, base, body, labels, milestones }) {
+    async func({ repo, title, head, base, body, labels, milestones }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      const labelIds = await gitea.resolveLabelNamesToIds(owner, repo, labels ?? '')
+      const labelIds = await gitea.resolveLabelNamesToIds(owner, repoName, labels ?? '')
       const milestoneIds = milestones
         ? milestones.split(',').map((n: string) => parseInt(n.trim(), 10))
         : undefined
-      return gitea.createPullRequest(owner, repo, {
+      return gitea.createPullRequest(owner, repoName, {
         title,
         head,
         base,
@@ -193,8 +194,7 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'edit',
     description: 'Edit a pull request',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Pull request index number'),
       title: z.string().optional().describe('Pull request title'),
       body: z.string().optional().describe('Pull request body/description'),
@@ -213,23 +213,12 @@ export function createPullRequestCommand(cli: Cli) {
       state: z.string(),
       html_url: z.string(),
     }),
-    async func({
-      owner,
-      repo,
-      index,
-      title,
-      body,
-      state,
-      base,
-      assignee,
-      assignees,
-      milestone,
-      labels,
-    }) {
+    async func({ repo, index, title, body, state, base, assignee, assignees, milestone, labels }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      const labelIds = await gitea.resolveLabelNamesToIds(owner, repo, labels ?? '')
+      const labelIds = await gitea.resolveLabelNamesToIds(owner, repoName, labels ?? '')
       const assigneeList = assignees ? assignees.split(',').map((n: string) => n.trim()) : undefined
-      return gitea.editPullRequest(owner, repo, index, {
+      return gitea.editPullRequest(owner, repoName, index, {
         title,
         body: body?.replace(/\\n/g, '\n'),
         state,
@@ -246,14 +235,14 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'comments',
     description: 'Get pull request all comments by index',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Pull request index number'),
     }),
     outputSchema: z.array(z.any()),
-    async func({ owner, repo, index }) {
+    async func({ repo, index }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.getPullRequestCommentsByIndex(owner, repo, index) as any
+      return gitea.getPullRequestCommentsByIndex(owner, repoName, index) as any
     },
   })
 
@@ -261,8 +250,7 @@ export function createPullRequestCommand(cli: Cli) {
     command: 'reviews',
     description: 'List all reviews on a pull request',
     inputSchema: z.object({
-      owner: z.string().describe('Repository owner'),
-      repo: z.string().describe('Repository name'),
+      repo: z.string().describe('Repository full name, e.g. owner/repo'),
       index: z.number().describe('Pull request index number'),
       latest: z
         .boolean()
@@ -295,11 +283,12 @@ export function createPullRequestCommand(cli: Cli) {
         ),
       }),
     ),
-    async func({ owner, repo, index, latest }) {
+    async func({ repo, index, latest }) {
+      const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
       return latest
-        ? gitea.listPullRequestReviewsFilterUser(owner, repo, index)
-        : (gitea.listPullRequestReviews(owner, repo, index) as any)
+        ? gitea.listPullRequestReviewsFilterUser(owner, repoName, index)
+        : (gitea.listPullRequestReviews(owner, repoName, index) as any)
     },
   })
 

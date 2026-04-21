@@ -11,7 +11,8 @@ export function createConfigCommand(cli: Cli) {
 
   configCli.addCommand({
     command: 'set',
-    description: `Set a configuration value. Allowed keys: ${ALLOWED_KEYS_STR}`,
+    paths: ['key', 'value'],
+    description: `Set a configuration value. Allowed keys: ${ALLOWED_KEYS_STR}, allowed values depend on the key. \n  format: json/toon.`,
     inputSchema: z.object({
       key: z.enum(ALLOWED_KEYS).describe('Configuration key'),
       value: z.string().describe('Configuration value'),

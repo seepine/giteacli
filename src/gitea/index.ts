@@ -59,8 +59,6 @@ export class Gitea {
     if (res.pull_request !== null) {
       throw new Error('Invalid issue index')
     }
-    console.log(res)
-
     return res
   }
 

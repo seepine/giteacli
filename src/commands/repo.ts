@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { Gitea } from '../gitea'
 import { Cli } from '../cli'
+import { parseRepoFullName } from './repo-full-name'
 import { createRepoLabelCommand } from './repo-label'
 const RepoSchema = z.object({
   name: z.string(),
@@ -135,8 +136,7 @@ export function createRepoCommand(cli: Cli) {
       command: 'fork',
       description: 'Fork a repository',
       inputSchema: z.object({
-        owner: z.string().describe('Repository owner'),
-        repo: z.string().describe('Repository name'),
+        repo: z.string().describe('Repository full name, e.g. owner/repo'),
         organization: z
           .string()
           .optional()
@@ -150,9 +150,10 @@ export function createRepoCommand(cli: Cli) {
         html_url: z.string(),
         clone_url: z.string(),
       }),
-      func({ owner, repo, organization }) {
+      func({ repo, organization }) {
+        const { owner, repoName } = parseRepoFullName(repo)
         const gitea = new Gitea()
-        return gitea.forkRepo(owner, repo, { organization }) as any
+        return gitea.forkRepo(owner, repoName, { organization }) as any
       },
     })
 

@@ -34,6 +34,10 @@ const toOptionKey = (key: string): string =>
 export class CliChild {
   constructor(protected program: Command) {}
 
+  rawCommand(command: string, description: string) {
+    return this.program.command(command).description(description)
+  }
+
   command(command: string, description: string) {
     return new CliChild(this.program.command(command).description(description))
   }
@@ -43,6 +47,7 @@ export class CliChild {
     TOutput extends z.ZodObject | z.ZodArray | undefined,
   >(opts: {
     command: string
+    paths?: string[]
     description: string
     inputSchema: TInput
     outputSchema?: TOutput
@@ -50,11 +55,16 @@ export class CliChild {
       ? (input: z.infer<TInput>) => Promise<z.infer<TOutput>> | z.infer<TOutput>
       : (input: z.infer<TInput>) => Promise<void> | void
   }) {
-    const cmd = this.program.command(opts.command).description(opts.description)
+    const cmd = this.program
+      .command(opts.command + (opts.paths ? ' ' + opts.paths.map((p) => `<${p}>`).join(' ') : ''))
+      .description(opts.description)
 
     const shape = opts.inputSchema.shape
     for (const [key, field] of Object.entries(shape)) {
       if (!(field instanceof ZodType)) {
+        continue
+      }
+      if (opts.paths?.includes(key)) {
         continue
       }
       const isOptional = field.safeParse(undefined).success
@@ -67,7 +77,21 @@ export class CliChild {
         cmd.requiredOption(`--${optionKey} <${typeName}>`, field.description)
       }
     }
-    cmd.action(async (args) => {
+    cmd.action(async (...allArgs) => {
+      let args: Record<string, any>
+      if (opts.paths && opts.paths.length > 0) {
+        args = allArgs[opts.paths.length]
+      } else {
+        args = allArgs[0] || {}
+      }
+      if (opts.paths) {
+        for (let i = 0; i < opts.paths.length; i++) {
+          if (allArgs[i] !== undefined) {
+            // @ts-ignore
+            args[opts.paths[i]] = allArgs[i]
+          }
+        }
+      }
       // Coerce string values to numbers for number-typed fields
       const coercedArgs: Record<string, unknown> = {}
       for (const [key, field] of Object.entries(shape)) {
