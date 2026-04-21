@@ -78,8 +78,8 @@ const PRSchema = z.object({
   requested_reviewers: z.array(PRUserSchema).optional().nullable(),
   requested_reviewers_teams: z.array(z.any()).optional().nullable(),
 
-  comments: z.number(),
-  review_comments: z.number(),
+  comments: z.number().nullable().optional(),
+  review_comments: z.number().nullable().optional(),
   draft: z.boolean(),
   is_locked: z.boolean(),
 
