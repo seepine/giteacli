@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.6](https://github.com/seepine/giteacli/compare/v0.1.5...v0.1.6) (2026-04-21)
+
+
+### Features
+
+* **cli:** refactor command structure to use full repository name format and add parseRepoFullName utility ([816af00](https://github.com/seepine/giteacli/commit/816af00aad7cd830a9f8428949ba98e9315f53e6))
+
+
+### Bug Fixes
+
+* **pr:** make comments and review_comments fields optional and nullable ([dff72c1](https://github.com/seepine/giteacli/commit/dff72c19a6a9e83356a95056b850dad3ca9a55e8))
+
 ## [0.1.5](https://github.com/seepine/giteacli/compare/v0.1.4...v0.1.5) (2026-04-21)
 
 
