@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Gitea API - version 1.26.0+dev-667-ge1f04b0d03
+ * Gitea API - version 1.26.0+dev-1029-gc1dc3907a7
  *
  * This documentation describes the Gitea API.
  *
@@ -166,8 +166,11 @@ export interface CreateUserOption {
   username: string;
   /**
    * User visibility level: public, limited, or private
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
-  visibility?: string;
+  visibility?: 'public' | 'limited' | 'private';
 }
 export interface MarkdownOption {
   /**
@@ -249,6 +252,9 @@ export interface CreateOrgOption {
   username: string;
   /**
    * possible values are `public` (default), `limited` or `private`
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
   visibility?: 'public' | 'limited' | 'private';
   /**
@@ -377,6 +383,8 @@ export interface CreateRepoOption {
   name: string;
   /**
    * ObjectFormatName of the underlying git repository, empty string for default (sha1)
+   * sha1 ObjectFormatSHA1
+   * sha256 ObjectFormatSHA256
    */
   object_format_name?: 'sha1' | 'sha256';
   /**
@@ -578,8 +586,11 @@ export interface User {
   starred_repos_count?: number;
   /**
    * User visibility level option: public, limited, private
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
-  visibility?: string;
+  visibility?: 'public' | 'limited' | 'private';
   /**
    * the user's website
    */
@@ -772,8 +783,11 @@ export interface EditUserOption {
   source_id: number;
   /**
    * User visibility level: public, limited, or private
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
-  visibility?: string;
+  visibility?: 'public' | 'limited' | 'private';
   /**
    * The user's personal website URL
    */
@@ -811,6 +825,9 @@ export interface EditOrgOption {
   repo_admin_change_team_access?: boolean;
   /**
    * possible values are `public`, `limited` or `private`
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
   visibility?: 'public' | 'limited' | 'private';
   /**
@@ -951,6 +968,10 @@ export interface EditRepoOption {
    */
   allow_merge_commits?: boolean;
   /**
+   * either `true` to allow updating pull request branch by merge, or `false` to prevent it.
+   */
+  allow_merge_update?: boolean;
+  /**
    * either `true` to allow rebase-merging pull requests, or `false` to prevent rebase-merging.
    */
   allow_rebase?: boolean;
@@ -990,6 +1011,10 @@ export interface EditRepoOption {
    * set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
    */
   default_merge_style?: string;
+  /**
+   * set to an update style to be used by this repository: "merge" or "rebase".
+   */
+  default_update_style?: string;
   /**
    * a short description of the repository.
    */
@@ -1051,6 +1076,18 @@ export interface EditRepoOption {
    */
   mirror_interval?: string;
   /**
+   * authentication password for the remote repository (mirrors)
+   */
+  mirror_password?: string;
+  /**
+   * authentication token for the remote repository (mirrors)
+   */
+  mirror_token?: string;
+  /**
+   * authentication username for the remote repository (mirrors)
+   */
+  mirror_username?: string;
+  /**
    * name of the repository
    */
   name?: string;
@@ -1090,8 +1127,11 @@ export interface CreateBranchProtectionOption {
    * Deprecated: true
    */
   branch_name?: string;
+  bypass_allowlist_teams?: string[];
+  bypass_allowlist_usernames?: string[];
   dismiss_stale_approvals?: boolean;
   enable_approvals_whitelist?: boolean;
+  enable_bypass_allowlist?: boolean;
   enable_force_push?: boolean;
   enable_force_push_allowlist?: boolean;
   enable_merge_whitelist?: boolean;
@@ -1125,8 +1165,11 @@ export interface EditBranchProtectionOption {
   block_on_official_review_requests?: boolean;
   block_on_outdated_branch?: boolean;
   block_on_rejected_reviews?: boolean;
+  bypass_allowlist_teams?: string[];
+  bypass_allowlist_usernames?: string[];
   dismiss_stale_approvals?: boolean;
   enable_approvals_whitelist?: boolean;
+  enable_bypass_allowlist?: boolean;
   enable_force_push?: boolean;
   enable_force_push_allowlist?: boolean;
   enable_merge_whitelist?: boolean;
@@ -1185,6 +1228,12 @@ export interface RenameBranchRepoOption {
   name: string;
 }
 export interface AddCollaboratorOption {
+  /**
+   * Permission level to grant the collaborator
+   * read RepoWritePermissionRead
+   * write RepoWritePermissionWrite
+   * admin RepoWritePermissionAdmin
+   */
   permission?: 'read' | 'write' | 'admin';
 }
 export interface Identity {
@@ -1449,6 +1498,10 @@ export interface CreateIssueOption {
    * milestone id
    */
   milestone?: number;
+  /**
+   * list of project ids
+   */
+  projects?: number[];
   ref?: string;
   title: string;
 }
@@ -1480,6 +1533,10 @@ export interface EditIssueOption {
   content_version?: number;
   due_date?: string;
   milestone?: number;
+  /**
+   * list of project ids to set (replaces existing projects)
+   */
+  projects?: number[];
   ref?: string;
   state?: string;
   title?: string;
@@ -1649,14 +1706,17 @@ export interface EditPullRequestOption {
    */
   unset_due_date?: boolean;
 }
+export interface CreatePullReviewCommentReplyOptions {
+  body?: string;
+}
 export interface MergePullRequestOption {
-  Do: 'merge' | 'rebase' | 'rebase-merge' | 'squash' | 'fast-forward-only' | 'manually-merged';
-  MergeCommitID?: string;
-  MergeMessageField?: string;
-  MergeTitleField?: string;
   delete_branch_after_merge?: boolean;
+  do: 'merge' | 'rebase' | 'rebase-merge' | 'squash' | 'fast-forward-only' | 'manually-merged';
   force_merge?: boolean;
   head_commit_id?: string;
+  merge_commit_id?: string;
+  merge_message_field?: string;
+  merge_title_field?: string;
   merge_when_checks_succeed?: boolean;
 }
 export interface PullReviewRequestOptions {
@@ -2021,8 +2081,11 @@ export interface Organization {
   username?: string;
   /**
    * The visibility level of the organization (public, limited, private)
+   * public UserVisibilityPublic
+   * limited UserVisibilityLimited
+   * private UserVisibilityPrivate
    */
-  visibility?: string;
+  visibility?: 'public' | 'limited' | 'private';
   /**
    * The website URL of the organization
    */
@@ -2072,6 +2135,7 @@ export interface Repository {
   allow_fast_forward_only_merge?: boolean;
   allow_manual_merge?: boolean;
   allow_merge_commits?: boolean;
+  allow_merge_update?: boolean;
   allow_rebase?: boolean;
   allow_rebase_explicit?: boolean;
   allow_rebase_update?: boolean;
@@ -2088,6 +2152,7 @@ export interface Repository {
   default_delete_branch_after_merge?: boolean;
   default_merge_style?: string;
   default_target_branch?: string;
+  default_update_style?: string;
   description?: string;
   empty?: boolean;
   /**
@@ -2123,10 +2188,13 @@ export interface Repository {
   link?: string;
   mirror?: boolean;
   mirror_interval?: string;
+  mirror_last_sync_at?: string;
   mirror_updated?: string;
   name?: string;
   /**
    * ObjectFormatName of the underlying git repository
+   * sha1 ObjectFormatSHA1
+   * sha256 ObjectFormatSHA256
    */
   object_format_name?: 'sha1' | 'sha256';
   open_issues_count?: number;
@@ -2177,10 +2245,20 @@ export interface ActionWorkflowRun {
   id?: number;
   path?: string;
   /**
+   * PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+   * It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+   */
+  previous_attempt_url?: string;
+  /**
    * Repository represents a repository
    */
   repository?: Repository;
   repository_id?: number;
+  /**
+   * RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+   * A value of 0 is a legacy-only sentinel for runs created before attempts existed
+   * and indicates no corresponding /attempts/{n} resource is available.
+   */
   run_attempt?: number;
   run_number?: number;
   started_at?: string;
@@ -2329,10 +2407,10 @@ export interface NotificationSubject {
   title?: string;
   /**
    * Type indicates the type of the notification subject
-   * Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-   * Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-   * Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-   * Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+   * Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+   * Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+   * Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+   * Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
    */
   type?: 'Issue' | 'Pull' | 'Commit' | 'Repository';
   /**
@@ -2537,6 +2615,39 @@ export interface Milestone {
   title?: string;
   updated_at?: string;
 }
+export interface Project {
+  closed_at?: string;
+  created_at?: string;
+  /**
+   * CreatorID is the user who created the project
+   */
+  creator_id?: number;
+  /**
+   * Description provides details about the project
+   */
+  description?: string;
+  /**
+   * ID is the unique identifier for the project
+   */
+  id?: number;
+  /**
+   * IsClosed indicates if the project is closed
+   */
+  is_closed?: boolean;
+  /**
+   * OwnerID is the owner of the project (for org-level projects)
+   */
+  owner_id?: number;
+  /**
+   * RepoID is the repository this project belongs to (for repo-level projects)
+   */
+  repo_id?: number;
+  /**
+   * Title is the title of the project
+   */
+  title?: string;
+  updated_at?: string;
+}
 export interface PullRequestMeta {
   draft?: boolean;
   html_url?: string;
@@ -2577,6 +2688,7 @@ export interface Issue {
   original_author?: string;
   original_author_id?: number;
   pin_order?: number;
+  projects?: Project[];
   /**
    * PullRequestMeta PR info if an issue is a PR
    */
@@ -2669,9 +2781,12 @@ export interface BranchProtection {
    * Deprecated: true
    */
   branch_name?: string;
+  bypass_allowlist_teams?: string[];
+  bypass_allowlist_usernames?: string[];
   created_at?: string;
   dismiss_stale_approvals?: boolean;
   enable_approvals_whitelist?: boolean;
+  enable_bypass_allowlist?: boolean;
   enable_force_push?: boolean;
   enable_force_push_allowlist?: boolean;
   enable_merge_whitelist?: boolean;
@@ -2815,8 +2930,13 @@ export interface Branch {
 export interface RepoCollaboratorPermission {
   /**
    * Permission level of the collaborator
+   * none AccessLevelNameNone
+   * read AccessLevelNameRead
+   * write AccessLevelNameWrite
+   * admin AccessLevelNameAdmin
+   * owner AccessLevelNameOwner
    */
-  permission?: string;
+  permission?: 'none' | 'read' | 'write' | 'admin' | 'owner';
   /**
    * RoleName is the name of the permission role
    */
@@ -4495,6 +4615,10 @@ declare global {
        *   page?: number
        *   // page size of results
        *   limit?: number
+       *   // sort jobs by attribute. Supported values are "id". Default is "id"
+       *   sort?: string
+       *   // sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+       *   order?: string
        * }
        * ```
        *
@@ -4557,6 +4681,14 @@ declare global {
              * page size of results
              */
             limit?: number;
+            /**
+             * sort jobs by attribute. Supported values are "id". Default is "id"
+             */
+            sort?: string;
+            /**
+             * sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+             */
+            order?: string;
           };
         }
       >(
@@ -4861,7 +4993,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -4875,6 +5010,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -4891,6 +5027,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -4941,9 +5078,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -4986,7 +5126,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -5041,7 +5184,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -5083,7 +5229,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -5123,7 +5272,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -5150,11 +5302,15 @@ declare global {
        *     html_url?: string
        *     id?: number
        *     path?: string
+       *     // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *     // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *     previous_attempt_url?: string
        *     // Repository represents a repository
        *     repository?: {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -5171,6 +5327,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -5221,9 +5378,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -5266,7 +5426,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -5321,7 +5484,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -5363,7 +5529,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -5403,7 +5572,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -5427,6 +5599,9 @@ declare global {
        *       website?: string
        *     }
        *     repository_id?: number
+       *     // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *     // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *     // and indicates no corresponding /attempts/{n} resource is available.
        *     run_attempt?: number
        *     run_number?: number
        *     started_at?: string
@@ -5469,7 +5644,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -6074,7 +6252,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }>
@@ -6310,7 +6491,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -6410,7 +6594,10 @@ declare global {
        *   // username of the user
        *   username: string
        *   // User visibility level: public, limited, or private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        * }
        * ```
        *
@@ -6455,7 +6642,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }
@@ -6573,7 +6763,10 @@ declare global {
        *   restricted?: boolean
        *   source_id: number
        *   // User visibility level: public, limited, or private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The user's personal website URL
        *   website?: string
        * }
@@ -6620,7 +6813,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }
@@ -6867,7 +7063,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -6964,6 +7163,9 @@ declare global {
        *   // username of the organization
        *   username: string
        *   // possible values are `public` (default), `limited` or `private`
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
        *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
@@ -6995,7 +7197,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }
@@ -7098,6 +7303,8 @@ declare global {
        *   // Name of the repository to create
        *   name: string
        *   // ObjectFormatName of the underlying git repository, empty string for default (sha1)
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   // Whether the repository is private
        *   private?: boolean
@@ -7118,6 +7325,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -7134,6 +7342,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -7184,9 +7393,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -7229,7 +7441,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -7284,7 +7499,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -7326,7 +7544,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -7366,7 +7587,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -7815,6 +8039,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -7831,6 +8056,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -7881,9 +8107,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -7926,7 +8155,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -7981,7 +8213,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8023,7 +8258,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8063,7 +8301,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -8102,10 +8343,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -8194,6 +8435,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -8210,6 +8452,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -8260,9 +8503,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -8305,7 +8551,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -8360,7 +8609,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8402,7 +8654,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8442,7 +8697,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -8481,10 +8739,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -8573,6 +8831,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -8589,6 +8848,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -8639,9 +8899,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -8684,7 +8947,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -8739,7 +9005,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8781,7 +9050,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -8821,7 +9093,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -8860,10 +9135,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -8930,6 +9205,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -8946,6 +9222,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -8996,9 +9273,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -9041,7 +9321,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -9096,7 +9379,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9138,7 +9424,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9178,7 +9467,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -9217,10 +9509,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -9311,6 +9603,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -9327,6 +9620,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -9377,9 +9671,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -9422,7 +9719,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -9477,7 +9777,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9519,7 +9822,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9559,7 +9865,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -9598,10 +9907,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -9712,6 +10021,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -9728,6 +10038,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -9778,9 +10089,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -9823,7 +10137,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -9878,7 +10195,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9920,7 +10240,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -9960,7 +10283,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -9999,10 +10325,10 @@ declare global {
        *     // Title is the title of the notification subject
        *     title?: string
        *     // Type indicates the type of the notification subject
-       *     // Issue NotifySubjectIssue  NotifySubjectIssue an issue is subject of an notification
-       *     // Pull NotifySubjectPull  NotifySubjectPull an pull is subject of an notification
-       *     // Commit NotifySubjectCommit  NotifySubjectCommit an commit is subject of an notification
-       *     // Repository NotifySubjectRepository  NotifySubjectRepository an repository is subject of an notification
+       *     // Issue NotifySubjectIssue  NotifySubjectIssue a issue is subject of an notification
+       *     // Pull NotifySubjectPull  NotifySubjectPull a pull is subject of an notification
+       *     // Commit NotifySubjectCommit  NotifySubjectCommit a commit is subject of an notification
+       *     // Repository NotifySubjectRepository  NotifySubjectRepository a repository is subject of an notification
        *     type?: 'Issue' | 'Pull' | 'Commit' | 'Repository'
        *     // URL is the API URL for the notification subject
        *     url?: string
@@ -10089,6 +10415,8 @@ declare global {
        *   // Name of the repository to create
        *   name: string
        *   // ObjectFormatName of the underlying git repository, empty string for default (sha1)
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   // Whether the repository is private
        *   private?: boolean
@@ -10109,6 +10437,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -10125,6 +10454,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -10175,9 +10505,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -10220,7 +10553,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -10275,7 +10611,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -10317,7 +10656,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -10357,7 +10699,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -10439,7 +10784,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }>
@@ -10486,6 +10834,9 @@ declare global {
        *   // username of the organization
        *   username: string
        *   // possible values are `public` (default), `limited` or `private`
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
        *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
@@ -10517,7 +10868,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }
@@ -10572,7 +10926,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }
@@ -10659,6 +11016,9 @@ declare global {
        *   // Whether repository administrators can change team access
        *   repo_admin_change_team_access?: boolean
        *   // possible values are `public`, `limited` or `private`
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
        *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
@@ -10690,7 +11050,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }
@@ -11172,7 +11535,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -11186,6 +11552,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -11202,6 +11569,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -11252,9 +11620,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -11297,7 +11668,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -11352,7 +11726,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -11394,7 +11771,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -11434,7 +11814,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -11461,11 +11844,15 @@ declare global {
        *     html_url?: string
        *     id?: number
        *     path?: string
+       *     // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *     // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *     previous_attempt_url?: string
        *     // Repository represents a repository
        *     repository?: {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -11482,6 +11869,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -11532,9 +11920,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -11577,7 +11968,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -11632,7 +12026,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -11674,7 +12071,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -11714,7 +12114,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -11738,6 +12141,9 @@ declare global {
        *       website?: string
        *     }
        *     repository_id?: number
+       *     // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *     // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *     // and indicates no corresponding /attempts/{n} resource is available.
        *     run_attempt?: number
        *     run_number?: number
        *     started_at?: string
@@ -11780,7 +12186,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -12353,7 +12762,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -12434,7 +12846,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -12485,6 +12900,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -12501,6 +12917,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -12551,9 +12968,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -12596,7 +13016,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -12651,7 +13074,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -12693,7 +13119,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -12733,7 +13162,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -12942,7 +13374,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -13842,7 +14277,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -14024,7 +14462,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -14262,6 +14703,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -14278,6 +14720,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -14328,9 +14771,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -14373,7 +14819,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -14428,7 +14877,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -14470,7 +14922,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -14510,7 +14965,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -14594,6 +15052,8 @@ declare global {
        *   // Name of the repository to create
        *   name: string
        *   // ObjectFormatName of the underlying git repository, empty string for default (sha1)
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   // Whether the repository is private
        *   private?: boolean
@@ -14614,6 +15074,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -14630,6 +15091,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -14680,9 +15142,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -14725,7 +15190,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -14780,7 +15248,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -14822,7 +15293,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -14862,7 +15336,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -14900,6 +15377,42 @@ declare global {
       >(
         config: Config
       ): Alova2Method<Repository, 'organization.createOrgRepo', Config>;
+      /**
+       * ---
+       *
+       * [DELETE] Delete all repositories in an organization
+       *
+       * **path:** /orgs/{org}/repos
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {
+       *   // name of the organization
+       *   org: string
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = null
+       * ```
+       */
+      orgDeleteRepos<
+        Config extends Alova2MethodConfig<null> & {
+          pathParams: {
+            /**
+             * name of the organization
+             */
+            org: string;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<null, 'organization.orgDeleteRepos', Config>;
       /**
        * ---
        *
@@ -14966,7 +15479,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -15074,7 +15590,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -15173,7 +15692,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -15281,7 +15803,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -15415,7 +15940,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -15514,7 +16042,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -15595,7 +16126,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -15646,6 +16180,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -15662,6 +16197,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -15712,9 +16248,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -15757,7 +16296,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -15812,7 +16354,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -15854,7 +16399,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -15894,7 +16442,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -16020,7 +16571,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -16108,7 +16662,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }
@@ -16251,6 +16808,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -16267,6 +16825,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -16317,9 +16876,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -16362,7 +16924,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -16417,7 +16982,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -16459,7 +17027,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -16499,7 +17070,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -16575,6 +17149,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -16591,6 +17166,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -16641,9 +17217,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -16686,7 +17265,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -16741,7 +17323,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -16783,7 +17368,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -16823,7 +17411,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -17008,7 +17599,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }>
@@ -17084,7 +17678,10 @@ declare global {
        *   // deprecated
        *   username?: string
        *   // The visibility level of the organization (public, limited, private)
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // The website URL of the organization
        *   website?: string
        * }>
@@ -17215,6 +17812,7 @@ declare global {
        *     | 'rpm'
        *     | 'rubygems'
        *     | 'swift'
+       *     | 'terraform'
        *     | 'vagrant'
        *   // name filter
        *   q?: string
@@ -17265,7 +17863,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -17313,7 +17914,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -17322,6 +17926,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -17338,6 +17943,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -17388,9 +17994,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -17433,7 +18042,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -17488,7 +18100,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -17530,7 +18145,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -17570,7 +18188,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -17641,6 +18262,7 @@ declare global {
               | 'rpm'
               | 'rubygems'
               | 'swift'
+              | 'terraform'
               | 'vagrant';
             /**
              * name filter
@@ -17728,7 +18350,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -17776,7 +18401,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -17785,6 +18413,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -17801,6 +18430,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -17851,9 +18481,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -17896,7 +18529,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -17951,7 +18587,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -17993,7 +18632,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -18033,7 +18675,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -18206,7 +18851,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -18254,7 +18902,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -18263,6 +18914,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -18279,6 +18931,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -18329,9 +18982,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -18374,7 +19030,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -18429,7 +19088,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -18471,7 +19133,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -18511,7 +19176,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -18730,7 +19398,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -18778,7 +19449,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -18787,6 +19461,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -18803,6 +19478,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -18853,9 +19529,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -18898,7 +19577,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -18953,7 +19635,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -18995,7 +19680,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -19035,7 +19723,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -19324,7 +20015,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -19368,7 +20062,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -19423,6 +20120,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -19481,7 +20200,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -19676,7 +20398,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -19720,7 +20445,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -19775,6 +20503,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -19833,7 +20583,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -19944,6 +20697,10 @@ declare global {
        *   labels?: number[]
        *   // milestone id
        *   milestone?: number
+       *   // list of project ids
+       *   // [items] start
+       *   // [items] end
+       *   projects?: number[]
        *   ref?: string
        *   title: string
        * }
@@ -20010,7 +20767,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -20054,7 +20814,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -20109,6 +20872,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -20167,7 +20952,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -20304,7 +21092,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -20444,7 +21235,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -20627,7 +21421,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21079,7 +21876,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21183,7 +21983,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21352,7 +22155,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21396,7 +22202,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -21451,6 +22260,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -21509,7 +22340,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21620,6 +22454,10 @@ declare global {
        *   content_version?: number
        *   due_date?: string
        *   milestone?: number
+       *   // list of project ids to set (replaces existing projects)
+       *   // [items] start
+       *   // [items] end
+       *   projects?: number[]
        *   ref?: string
        *   state?: string
        *   title?: string
@@ -21688,7 +22526,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -21732,7 +22573,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -21787,6 +22631,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -21845,7 +22711,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22324,7 +23193,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22368,7 +23240,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -22423,6 +23298,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -22481,7 +23378,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22612,7 +23512,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22656,7 +23559,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -22711,6 +23617,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -22769,7 +23697,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22891,7 +23822,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -22935,7 +23869,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -22990,6 +23927,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -23048,7 +24007,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23187,7 +24149,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23332,7 +24297,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23524,7 +24492,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23710,7 +24681,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23754,7 +24728,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -23809,6 +24786,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -23867,7 +24866,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -23998,7 +25000,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -24042,7 +25047,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -24097,6 +25105,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -24155,7 +25185,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -24277,7 +25310,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -24321,7 +25357,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -24376,6 +25415,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -24434,7 +25495,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -25107,7 +26171,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -25221,7 +26288,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -25526,7 +26596,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -25811,7 +26884,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -25849,7 +26925,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -25920,7 +26999,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -25964,7 +27046,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -26019,6 +27104,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -26077,7 +27184,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -26228,7 +27338,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -26293,7 +27406,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -26337,7 +27453,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -26392,6 +27511,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -26450,7 +27591,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -26495,7 +27639,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -26563,7 +27710,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -26607,7 +27757,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }>
@@ -26662,6 +27815,28 @@ declare global {
        *       original_author?: string
        *       original_author_id?: number
        *       pin_order?: number
+       *       // [items] start
+       *       // Project represents a project
+       *       // [items] end
+       *       projects?: Array<{
+       *         closed_at?: string
+       *         created_at?: string
+       *         // CreatorID is the user who created the project
+       *         creator_id?: number
+       *         // Description provides details about the project
+       *         description?: string
+       *         // ID is the unique identifier for the project
+       *         id?: number
+       *         // IsClosed indicates if the project is closed
+       *         is_closed?: boolean
+       *         // OwnerID is the owner of the project (for org-level projects)
+       *         owner_id?: number
+       *         // RepoID is the repository this project belongs to (for repo-level projects)
+       *         repo_id?: number
+       *         // Title is the title of the project
+       *         title?: string
+       *         updated_at?: string
+       *       }>
        *       // PullRequestMeta PR info if an issue is a PR
        *       pull_request?: {
        *         draft?: boolean
@@ -26720,7 +27895,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -26775,7 +27953,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -26925,7 +28106,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -26969,7 +28153,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -27024,6 +28211,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -27082,7 +28291,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -27240,7 +28452,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -27284,7 +28499,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -27339,6 +28557,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -27397,7 +28637,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -28284,6 +29527,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -28300,6 +29544,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -28350,9 +29595,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -28395,7 +29643,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -28450,7 +29701,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -28492,7 +29746,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -28532,7 +29789,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -28626,6 +29886,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -28642,6 +29903,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -28692,9 +29954,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -28737,7 +30002,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -28792,7 +30060,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -28834,7 +30105,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -28874,7 +30148,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -29005,6 +30282,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -29021,6 +30299,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -29071,9 +30350,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -29116,7 +30398,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -29171,7 +30456,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -29213,7 +30501,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -29253,7 +30544,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -29366,6 +30660,8 @@ declare global {
        *   allow_manual_merge?: boolean
        *   // either `true` to allow merging pull requests with a merge commit, or `false` to prevent merging pull requests with merge commits.
        *   allow_merge_commits?: boolean
+       *   // either `true` to allow updating pull request branch by merge, or `false` to prevent it.
+       *   allow_merge_update?: boolean
        *   // either `true` to allow rebase-merging pull requests, or `false` to prevent rebase-merging.
        *   allow_rebase?: boolean
        *   // either `true` to allow rebase with explicit merge commits (--no-ff), or `false` to prevent rebase with explicit merge commits.
@@ -29386,6 +30682,8 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   // set to a merge style to be used by this repository: "merge", "rebase", "rebase-merge", "squash", or "fast-forward-only".
        *   default_merge_style?: string
+       *   // set to an update style to be used by this repository: "merge" or "rebase".
+       *   default_update_style?: string
        *   // a short description of the repository.
        *   description?: string
        *   // enable prune - remove obsolete remote-tracking references when mirroring
@@ -29435,6 +30733,12 @@ declare global {
        *   }
        *   // set to a string like `8h30m0s` to set the mirror interval time
        *   mirror_interval?: string
+       *   // authentication password for the remote repository (mirrors)
+       *   mirror_password?: string
+       *   // authentication token for the remote repository (mirrors)
+       *   mirror_token?: string
+       *   // authentication username for the remote repository (mirrors)
+       *   mirror_username?: string
        *   // name of the repository
        *   name?: string
        *   // either `true` to make the repository private or `false` to make it public.
@@ -29458,6 +30762,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -29474,6 +30779,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -29524,9 +30830,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -29569,7 +30878,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -29624,7 +30936,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -29666,7 +30981,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -29706,7 +31024,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -29835,7 +31156,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -29849,6 +31173,7 @@ declare global {
        *         allow_fast_forward_only_merge?: boolean
        *         allow_manual_merge?: boolean
        *         allow_merge_commits?: boolean
+       *         allow_merge_update?: boolean
        *         allow_rebase?: boolean
        *         allow_rebase_explicit?: boolean
        *         allow_rebase_update?: boolean
@@ -29865,6 +31190,7 @@ declare global {
        *         default_delete_branch_after_merge?: boolean
        *         default_merge_style?: string
        *         default_target_branch?: string
+       *         default_update_style?: string
        *         description?: string
        *         empty?: boolean
        *         // ExternalTracker represents settings for external tracker
@@ -29915,9 +31241,12 @@ declare global {
        *         link?: string
        *         mirror?: boolean
        *         mirror_interval?: string
+       *         mirror_last_sync_at?: string
        *         mirror_updated?: string
        *         name?: string
        *         // ObjectFormatName of the underlying git repository
+       *         // sha1 ObjectFormatSHA1
+       *         // sha256 ObjectFormatSHA256
        *         object_format_name?: 'sha1' | 'sha256'
        *         open_issues_count?: number
        *         open_pr_counter?: number
@@ -29960,7 +31289,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -30015,7 +31347,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -30057,7 +31392,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -30097,7 +31435,10 @@ declare global {
        *               // deprecated
        *               username?: string
        *               // The visibility level of the organization (public, limited, private)
-       *               visibility?: string
+       *               // public UserVisibilityPublic
+       *               // limited UserVisibilityLimited
+       *               // private UserVisibilityPrivate
+       *               visibility?: 'public' | 'limited' | 'private'
        *               // The website URL of the organization
        *               website?: string
        *             }
@@ -30124,11 +31465,15 @@ declare global {
        *       html_url?: string
        *       id?: number
        *       path?: string
+       *       // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *       // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *       previous_attempt_url?: string
        *       // Repository represents a repository
        *       repository?: {
        *         allow_fast_forward_only_merge?: boolean
        *         allow_manual_merge?: boolean
        *         allow_merge_commits?: boolean
+       *         allow_merge_update?: boolean
        *         allow_rebase?: boolean
        *         allow_rebase_explicit?: boolean
        *         allow_rebase_update?: boolean
@@ -30145,6 +31490,7 @@ declare global {
        *         default_delete_branch_after_merge?: boolean
        *         default_merge_style?: string
        *         default_target_branch?: string
+       *         default_update_style?: string
        *         description?: string
        *         empty?: boolean
        *         // ExternalTracker represents settings for external tracker
@@ -30195,9 +31541,12 @@ declare global {
        *         link?: string
        *         mirror?: boolean
        *         mirror_interval?: string
+       *         mirror_last_sync_at?: string
        *         mirror_updated?: string
        *         name?: string
        *         // ObjectFormatName of the underlying git repository
+       *         // sha1 ObjectFormatSHA1
+       *         // sha256 ObjectFormatSHA256
        *         object_format_name?: 'sha1' | 'sha256'
        *         open_issues_count?: number
        *         open_pr_counter?: number
@@ -30240,7 +31589,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -30295,7 +31647,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -30337,7 +31692,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -30377,7 +31735,10 @@ declare global {
        *               // deprecated
        *               username?: string
        *               // The visibility level of the organization (public, limited, private)
-       *               visibility?: string
+       *               // public UserVisibilityPublic
+       *               // limited UserVisibilityLimited
+       *               // private UserVisibilityPrivate
+       *               visibility?: 'public' | 'limited' | 'private'
        *               // The website URL of the organization
        *               website?: string
        *             }
@@ -30401,6 +31762,9 @@ declare global {
        *         website?: string
        *       }
        *       repository_id?: number
+       *       // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *       // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *       // and indicates no corresponding /attempts/{n} resource is available.
        *       run_attempt?: number
        *       run_number?: number
        *       started_at?: string
@@ -30443,7 +31807,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -30551,7 +31918,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -30565,6 +31935,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -30581,6 +31952,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -30631,9 +32003,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -30676,7 +32051,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -30731,7 +32109,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -30773,7 +32154,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -30813,7 +32197,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -30840,11 +32227,15 @@ declare global {
        *     html_url?: string
        *     id?: number
        *     path?: string
+       *     // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *     // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *     previous_attempt_url?: string
        *     // Repository represents a repository
        *     repository?: {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -30861,6 +32252,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -30911,9 +32303,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -30956,7 +32351,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -31011,7 +32409,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -31053,7 +32454,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -31093,7 +32497,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -31117,6 +32524,9 @@ declare global {
        *       website?: string
        *     }
        *     repository_id?: number
+       *     // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *     // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *     // and indicates no corresponding /attempts/{n} resource is available.
        *     run_attempt?: number
        *     run_number?: number
        *     started_at?: string
@@ -31159,7 +32569,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -31314,6 +32727,10 @@ declare global {
        *   page?: number
        *   // page size of results
        *   limit?: number
+       *   // sort jobs by attribute. Supported values are "id". Default is "id"
+       *   sort?: string
+       *   // sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+       *   order?: string
        * }
        * ```
        *
@@ -31386,6 +32803,14 @@ declare global {
              * page size of results
              */
             limit?: number;
+            /**
+             * sort jobs by attribute. Supported values are "id". Default is "id"
+             */
+            sort?: string;
+            /**
+             * sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+             */
+            order?: string;
           };
         }
       >(
@@ -31912,7 +33337,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -31926,6 +33354,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -31942,6 +33371,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -31992,9 +33422,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -32037,7 +33470,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -32092,7 +33528,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -32134,7 +33573,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -32174,7 +33616,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -32201,11 +33646,15 @@ declare global {
        *     html_url?: string
        *     id?: number
        *     path?: string
+       *     // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *     // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *     previous_attempt_url?: string
        *     // Repository represents a repository
        *     repository?: {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -32222,6 +33671,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -32272,9 +33722,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -32317,7 +33770,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -32372,7 +33828,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -32414,7 +33873,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -32454,7 +33916,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -32478,6 +33943,9 @@ declare global {
        *       website?: string
        *     }
        *     repository_id?: number
+       *     // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *     // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *     // and indicates no corresponding /attempts/{n} resource is available.
        *     run_attempt?: number
        *     run_number?: number
        *     started_at?: string
@@ -32520,7 +33988,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -32639,7 +34110,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -32653,6 +34127,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -32669,6 +34144,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -32719,9 +34195,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -32764,7 +34243,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -32819,7 +34301,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -32861,7 +34346,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -32901,7 +34389,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -32928,11 +34419,15 @@ declare global {
        *   html_url?: string
        *   id?: number
        *   path?: string
+       *   // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *   // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *   previous_attempt_url?: string
        *   // Repository represents a repository
        *   repository?: {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -32949,6 +34444,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -32999,9 +34495,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -33044,7 +34543,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -33099,7 +34601,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -33141,7 +34646,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -33181,7 +34689,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -33205,6 +34716,9 @@ declare global {
        *     website?: string
        *   }
        *   repository_id?: number
+       *   // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *   // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *   // and indicates no corresponding /attempts/{n} resource is available.
        *   run_attempt?: number
        *   run_number?: number
        *   started_at?: string
@@ -33247,7 +34761,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -33412,7 +34929,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -33426,6 +34946,7 @@ declare global {
        *         allow_fast_forward_only_merge?: boolean
        *         allow_manual_merge?: boolean
        *         allow_merge_commits?: boolean
+       *         allow_merge_update?: boolean
        *         allow_rebase?: boolean
        *         allow_rebase_explicit?: boolean
        *         allow_rebase_update?: boolean
@@ -33442,6 +34963,7 @@ declare global {
        *         default_delete_branch_after_merge?: boolean
        *         default_merge_style?: string
        *         default_target_branch?: string
+       *         default_update_style?: string
        *         description?: string
        *         empty?: boolean
        *         // ExternalTracker represents settings for external tracker
@@ -33492,9 +35014,12 @@ declare global {
        *         link?: string
        *         mirror?: boolean
        *         mirror_interval?: string
+       *         mirror_last_sync_at?: string
        *         mirror_updated?: string
        *         name?: string
        *         // ObjectFormatName of the underlying git repository
+       *         // sha1 ObjectFormatSHA1
+       *         // sha256 ObjectFormatSHA256
        *         object_format_name?: 'sha1' | 'sha256'
        *         open_issues_count?: number
        *         open_pr_counter?: number
@@ -33537,7 +35062,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -33592,7 +35120,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -33634,7 +35165,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -33674,7 +35208,10 @@ declare global {
        *               // deprecated
        *               username?: string
        *               // The visibility level of the organization (public, limited, private)
-       *               visibility?: string
+       *               // public UserVisibilityPublic
+       *               // limited UserVisibilityLimited
+       *               // private UserVisibilityPrivate
+       *               visibility?: 'public' | 'limited' | 'private'
        *               // The website URL of the organization
        *               website?: string
        *             }
@@ -33701,11 +35238,15 @@ declare global {
        *       html_url?: string
        *       id?: number
        *       path?: string
+       *       // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *       // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *       previous_attempt_url?: string
        *       // Repository represents a repository
        *       repository?: {
        *         allow_fast_forward_only_merge?: boolean
        *         allow_manual_merge?: boolean
        *         allow_merge_commits?: boolean
+       *         allow_merge_update?: boolean
        *         allow_rebase?: boolean
        *         allow_rebase_explicit?: boolean
        *         allow_rebase_update?: boolean
@@ -33722,6 +35263,7 @@ declare global {
        *         default_delete_branch_after_merge?: boolean
        *         default_merge_style?: string
        *         default_target_branch?: string
+       *         default_update_style?: string
        *         description?: string
        *         empty?: boolean
        *         // ExternalTracker represents settings for external tracker
@@ -33772,9 +35314,12 @@ declare global {
        *         link?: string
        *         mirror?: boolean
        *         mirror_interval?: string
+       *         mirror_last_sync_at?: string
        *         mirror_updated?: string
        *         name?: string
        *         // ObjectFormatName of the underlying git repository
+       *         // sha1 ObjectFormatSHA1
+       *         // sha256 ObjectFormatSHA256
        *         object_format_name?: 'sha1' | 'sha256'
        *         open_issues_count?: number
        *         open_pr_counter?: number
@@ -33817,7 +35362,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -33872,7 +35420,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -33914,7 +35465,10 @@ declare global {
        *             source_id?: number
        *             starred_repos_count?: number
        *             // User visibility level option: public, limited, private
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // the user's website
        *             website?: string
        *           }
@@ -33954,7 +35508,10 @@ declare global {
        *               // deprecated
        *               username?: string
        *               // The visibility level of the organization (public, limited, private)
-       *               visibility?: string
+       *               // public UserVisibilityPublic
+       *               // limited UserVisibilityLimited
+       *               // private UserVisibilityPrivate
+       *               visibility?: 'public' | 'limited' | 'private'
        *               // The website URL of the organization
        *               website?: string
        *             }
@@ -33978,6 +35535,9 @@ declare global {
        *         website?: string
        *       }
        *       repository_id?: number
+       *       // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *       // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *       // and indicates no corresponding /attempts/{n} resource is available.
        *       run_attempt?: number
        *       run_number?: number
        *       started_at?: string
@@ -34020,7 +35580,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -34060,6 +35623,877 @@ declare global {
       /**
        * ---
        *
+       * [GET] Gets a specific workflow run attempt
+       *
+       * **path:** /repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt}
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {
+       *   // owner of the repo
+       *   owner: string
+       *   // name of the repository
+       *   repo: string
+       *   // id of the run
+       *   run: number
+       *   // logical attempt number of the run
+       *   attempt: number
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = {
+       *   // User represents a user
+       *   actor?: {
+       *     // Is user active
+       *     active?: boolean
+       *     // URL to the user's avatar
+       *     avatar_url?: string
+       *     created?: string
+       *     // the user's description
+       *     description?: string
+       *     email?: string
+       *     // user counts
+       *     followers_count?: number
+       *     following_count?: number
+       *     // the user's full name
+       *     full_name?: string
+       *     // URL to the user's gitea page
+       *     html_url?: string
+       *     // the user's id
+       *     id?: number
+       *     // Is the user an administrator
+       *     is_admin?: boolean
+       *     // User locale
+       *     language?: string
+       *     last_login?: string
+       *     // the user's location
+       *     location?: string
+       *     // login of the user, same as `username`
+       *     login?: string
+       *     // identifier of the user, provided by the external authenticator (if configured)
+       *     login_name?: string
+       *     // Is user login prohibited
+       *     prohibit_login?: boolean
+       *     // Is user restricted
+       *     restricted?: boolean
+       *     // The ID of the user's Authentication Source
+       *     source_id?: number
+       *     starred_repos_count?: number
+       *     // User visibility level option: public, limited, private
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
+       *     // the user's website
+       *     website?: string
+       *   }
+       *   completed_at?: string
+       *   conclusion?: string
+       *   display_title?: string
+       *   event?: string
+       *   head_branch?: string
+       *   // Repository represents a repository
+       *   head_repository?: {
+       *     allow_fast_forward_only_merge?: boolean
+       *     allow_manual_merge?: boolean
+       *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
+       *     allow_rebase?: boolean
+       *     allow_rebase_explicit?: boolean
+       *     allow_rebase_update?: boolean
+       *     allow_squash_merge?: boolean
+       *     archived?: boolean
+       *     archived_at?: string
+       *     autodetect_manual_merge?: boolean
+       *     avatar_url?: string
+       *     branch_count?: number
+       *     clone_url?: string
+       *     created_at?: string
+       *     default_allow_maintainer_edit?: boolean
+       *     default_branch?: string
+       *     default_delete_branch_after_merge?: boolean
+       *     default_merge_style?: string
+       *     default_target_branch?: string
+       *     default_update_style?: string
+       *     description?: string
+       *     empty?: boolean
+       *     // ExternalTracker represents settings for external tracker
+       *     external_tracker?: {
+       *       // External Issue Tracker URL Format. Use the placeholders {user}, {repo} and {index} for the username, repository name and issue index.
+       *       external_tracker_format?: string
+       *       // External Issue Tracker issue regular expression
+       *       external_tracker_regexp_pattern?: string
+       *       // External Issue Tracker Number Format, either `numeric`, `alphanumeric`, or `regexp`
+       *       external_tracker_style?: string
+       *       // URL of external issue tracker.
+       *       external_tracker_url?: string
+       *     }
+       *     // ExternalWiki represents setting for external wiki
+       *     external_wiki?: {
+       *       // URL of external wiki.
+       *       external_wiki_url?: string
+       *     }
+       *     fork?: boolean
+       *     forks_count?: number
+       *     full_name?: string
+       *     has_actions?: boolean
+       *     has_code?: boolean
+       *     has_issues?: boolean
+       *     has_packages?: boolean
+       *     has_projects?: boolean
+       *     has_pull_requests?: boolean
+       *     has_releases?: boolean
+       *     has_wiki?: boolean
+       *     html_url?: string
+       *     id?: number
+       *     ignore_whitespace_conflicts?: boolean
+       *     internal?: boolean
+       *     // InternalTracker represents settings for internal tracker
+       *     internal_tracker?: {
+       *       // Let only contributors track time (Built-in issue tracker)
+       *       allow_only_contributors_to_track_time?: boolean
+       *       // Enable dependencies for issues and pull requests (Built-in issue tracker)
+       *       enable_issue_dependencies?: boolean
+       *       // Enable time tracking (Built-in issue tracker)
+       *       enable_time_tracker?: boolean
+       *     }
+       *     language?: string
+       *     languages_url?: string
+       *     // [items] start
+       *     // [items] end
+       *     licenses?: string[]
+       *     link?: string
+       *     mirror?: boolean
+       *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
+       *     mirror_updated?: string
+       *     name?: string
+       *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
+       *     object_format_name?: 'sha1' | 'sha256'
+       *     open_issues_count?: number
+       *     open_pr_counter?: number
+       *     original_url?: string
+       *     // User represents a user
+       *     owner?: {
+       *       // Is user active
+       *       active?: boolean
+       *       // URL to the user's avatar
+       *       avatar_url?: string
+       *       created?: string
+       *       // the user's description
+       *       description?: string
+       *       email?: string
+       *       // user counts
+       *       followers_count?: number
+       *       following_count?: number
+       *       // the user's full name
+       *       full_name?: string
+       *       // URL to the user's gitea page
+       *       html_url?: string
+       *       // the user's id
+       *       id?: number
+       *       // Is the user an administrator
+       *       is_admin?: boolean
+       *       // User locale
+       *       language?: string
+       *       last_login?: string
+       *       // the user's location
+       *       location?: string
+       *       // login of the user, same as `username`
+       *       login?: string
+       *       // identifier of the user, provided by the external authenticator (if configured)
+       *       login_name?: string
+       *       // Is user login prohibited
+       *       prohibit_login?: boolean
+       *       // Is user restricted
+       *       restricted?: boolean
+       *       // The ID of the user's Authentication Source
+       *       source_id?: number
+       *       starred_repos_count?: number
+       *       // User visibility level option: public, limited, private
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
+       *       // the user's website
+       *       website?: string
+       *     }
+       *     // [cycle] $.head_repository
+       *     parent?: Repository
+       *     // Permission represents a set of permissions
+       *     permissions?: {
+       *       admin?: boolean
+       *       pull?: boolean
+       *       push?: boolean
+       *     }
+       *     private?: boolean
+       *     projects_mode?: string
+       *     release_counter?: number
+       *     // RepoTransfer represents a pending repo transfer
+       *     repo_transfer?: {
+       *       // User represents a user
+       *       doer?: {
+       *         // Is user active
+       *         active?: boolean
+       *         // URL to the user's avatar
+       *         avatar_url?: string
+       *         created?: string
+       *         // the user's description
+       *         description?: string
+       *         email?: string
+       *         // user counts
+       *         followers_count?: number
+       *         following_count?: number
+       *         // the user's full name
+       *         full_name?: string
+       *         // URL to the user's gitea page
+       *         html_url?: string
+       *         // the user's id
+       *         id?: number
+       *         // Is the user an administrator
+       *         is_admin?: boolean
+       *         // User locale
+       *         language?: string
+       *         last_login?: string
+       *         // the user's location
+       *         location?: string
+       *         // login of the user, same as `username`
+       *         login?: string
+       *         // identifier of the user, provided by the external authenticator (if configured)
+       *         login_name?: string
+       *         // Is user login prohibited
+       *         prohibit_login?: boolean
+       *         // Is user restricted
+       *         restricted?: boolean
+       *         // The ID of the user's Authentication Source
+       *         source_id?: number
+       *         starred_repos_count?: number
+       *         // User visibility level option: public, limited, private
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
+       *         // the user's website
+       *         website?: string
+       *       }
+       *       // User represents a user
+       *       recipient?: {
+       *         // Is user active
+       *         active?: boolean
+       *         // URL to the user's avatar
+       *         avatar_url?: string
+       *         created?: string
+       *         // the user's description
+       *         description?: string
+       *         email?: string
+       *         // user counts
+       *         followers_count?: number
+       *         following_count?: number
+       *         // the user's full name
+       *         full_name?: string
+       *         // URL to the user's gitea page
+       *         html_url?: string
+       *         // the user's id
+       *         id?: number
+       *         // Is the user an administrator
+       *         is_admin?: boolean
+       *         // User locale
+       *         language?: string
+       *         last_login?: string
+       *         // the user's location
+       *         location?: string
+       *         // login of the user, same as `username`
+       *         login?: string
+       *         // identifier of the user, provided by the external authenticator (if configured)
+       *         login_name?: string
+       *         // Is user login prohibited
+       *         prohibit_login?: boolean
+       *         // Is user restricted
+       *         restricted?: boolean
+       *         // The ID of the user's Authentication Source
+       *         source_id?: number
+       *         starred_repos_count?: number
+       *         // User visibility level option: public, limited, private
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
+       *         // the user's website
+       *         website?: string
+       *       }
+       *       // [items] start
+       *       // Team represents a team in an organization
+       *       // [items] end
+       *       teams?: Array<{
+       *         // Whether the team can create repositories in the organization
+       *         can_create_org_repo?: boolean
+       *         // The description of the team
+       *         description?: string
+       *         // The unique identifier of the team
+       *         id?: number
+       *         // Whether the team has access to all repositories in the organization
+       *         includes_all_repositories?: boolean
+       *         // The name of the team
+       *         name?: string
+       *         // Organization represents an organization
+       *         organization?: {
+       *           // The URL of the organization's avatar
+       *           avatar_url?: string
+       *           // The description of the organization
+       *           description?: string
+       *           // The email address of the organization
+       *           email?: string
+       *           // The full display name of the organization
+       *           full_name?: string
+       *           // The unique identifier of the organization
+       *           id?: number
+       *           // The location of the organization
+       *           location?: string
+       *           // The name of the organization
+       *           name?: string
+       *           // Whether repository administrators can change team access
+       *           repo_admin_change_team_access?: boolean
+       *           // username of the organization
+       *           // deprecated
+       *           username?: string
+       *           // The visibility level of the organization (public, limited, private)
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
+       *           // The website URL of the organization
+       *           website?: string
+       *         }
+       *         permission?: 'none' | 'read' | 'write' | 'admin' | 'owner'
+       *         // [items] start
+       *         // [items] end
+       *         units?: string[]
+       *         units_map?: Record<string, string>
+       *       }>
+       *     }
+       *     size?: number
+       *     ssh_url?: string
+       *     stars_count?: number
+       *     template?: boolean
+       *     // [items] start
+       *     // [items] end
+       *     topics?: string[]
+       *     updated_at?: string
+       *     url?: string
+       *     watchers_count?: number
+       *     website?: string
+       *   }
+       *   head_sha?: string
+       *   html_url?: string
+       *   id?: number
+       *   path?: string
+       *   // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *   // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *   previous_attempt_url?: string
+       *   // Repository represents a repository
+       *   repository?: {
+       *     allow_fast_forward_only_merge?: boolean
+       *     allow_manual_merge?: boolean
+       *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
+       *     allow_rebase?: boolean
+       *     allow_rebase_explicit?: boolean
+       *     allow_rebase_update?: boolean
+       *     allow_squash_merge?: boolean
+       *     archived?: boolean
+       *     archived_at?: string
+       *     autodetect_manual_merge?: boolean
+       *     avatar_url?: string
+       *     branch_count?: number
+       *     clone_url?: string
+       *     created_at?: string
+       *     default_allow_maintainer_edit?: boolean
+       *     default_branch?: string
+       *     default_delete_branch_after_merge?: boolean
+       *     default_merge_style?: string
+       *     default_target_branch?: string
+       *     default_update_style?: string
+       *     description?: string
+       *     empty?: boolean
+       *     // ExternalTracker represents settings for external tracker
+       *     external_tracker?: {
+       *       // External Issue Tracker URL Format. Use the placeholders {user}, {repo} and {index} for the username, repository name and issue index.
+       *       external_tracker_format?: string
+       *       // External Issue Tracker issue regular expression
+       *       external_tracker_regexp_pattern?: string
+       *       // External Issue Tracker Number Format, either `numeric`, `alphanumeric`, or `regexp`
+       *       external_tracker_style?: string
+       *       // URL of external issue tracker.
+       *       external_tracker_url?: string
+       *     }
+       *     // ExternalWiki represents setting for external wiki
+       *     external_wiki?: {
+       *       // URL of external wiki.
+       *       external_wiki_url?: string
+       *     }
+       *     fork?: boolean
+       *     forks_count?: number
+       *     full_name?: string
+       *     has_actions?: boolean
+       *     has_code?: boolean
+       *     has_issues?: boolean
+       *     has_packages?: boolean
+       *     has_projects?: boolean
+       *     has_pull_requests?: boolean
+       *     has_releases?: boolean
+       *     has_wiki?: boolean
+       *     html_url?: string
+       *     id?: number
+       *     ignore_whitespace_conflicts?: boolean
+       *     internal?: boolean
+       *     // InternalTracker represents settings for internal tracker
+       *     internal_tracker?: {
+       *       // Let only contributors track time (Built-in issue tracker)
+       *       allow_only_contributors_to_track_time?: boolean
+       *       // Enable dependencies for issues and pull requests (Built-in issue tracker)
+       *       enable_issue_dependencies?: boolean
+       *       // Enable time tracking (Built-in issue tracker)
+       *       enable_time_tracker?: boolean
+       *     }
+       *     language?: string
+       *     languages_url?: string
+       *     // [items] start
+       *     // [items] end
+       *     licenses?: string[]
+       *     link?: string
+       *     mirror?: boolean
+       *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
+       *     mirror_updated?: string
+       *     name?: string
+       *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
+       *     object_format_name?: 'sha1' | 'sha256'
+       *     open_issues_count?: number
+       *     open_pr_counter?: number
+       *     original_url?: string
+       *     // User represents a user
+       *     owner?: {
+       *       // Is user active
+       *       active?: boolean
+       *       // URL to the user's avatar
+       *       avatar_url?: string
+       *       created?: string
+       *       // the user's description
+       *       description?: string
+       *       email?: string
+       *       // user counts
+       *       followers_count?: number
+       *       following_count?: number
+       *       // the user's full name
+       *       full_name?: string
+       *       // URL to the user's gitea page
+       *       html_url?: string
+       *       // the user's id
+       *       id?: number
+       *       // Is the user an administrator
+       *       is_admin?: boolean
+       *       // User locale
+       *       language?: string
+       *       last_login?: string
+       *       // the user's location
+       *       location?: string
+       *       // login of the user, same as `username`
+       *       login?: string
+       *       // identifier of the user, provided by the external authenticator (if configured)
+       *       login_name?: string
+       *       // Is user login prohibited
+       *       prohibit_login?: boolean
+       *       // Is user restricted
+       *       restricted?: boolean
+       *       // The ID of the user's Authentication Source
+       *       source_id?: number
+       *       starred_repos_count?: number
+       *       // User visibility level option: public, limited, private
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
+       *       // the user's website
+       *       website?: string
+       *     }
+       *     // [cycle] $.repository
+       *     parent?: Repository
+       *     // Permission represents a set of permissions
+       *     permissions?: {
+       *       admin?: boolean
+       *       pull?: boolean
+       *       push?: boolean
+       *     }
+       *     private?: boolean
+       *     projects_mode?: string
+       *     release_counter?: number
+       *     // RepoTransfer represents a pending repo transfer
+       *     repo_transfer?: {
+       *       // User represents a user
+       *       doer?: {
+       *         // Is user active
+       *         active?: boolean
+       *         // URL to the user's avatar
+       *         avatar_url?: string
+       *         created?: string
+       *         // the user's description
+       *         description?: string
+       *         email?: string
+       *         // user counts
+       *         followers_count?: number
+       *         following_count?: number
+       *         // the user's full name
+       *         full_name?: string
+       *         // URL to the user's gitea page
+       *         html_url?: string
+       *         // the user's id
+       *         id?: number
+       *         // Is the user an administrator
+       *         is_admin?: boolean
+       *         // User locale
+       *         language?: string
+       *         last_login?: string
+       *         // the user's location
+       *         location?: string
+       *         // login of the user, same as `username`
+       *         login?: string
+       *         // identifier of the user, provided by the external authenticator (if configured)
+       *         login_name?: string
+       *         // Is user login prohibited
+       *         prohibit_login?: boolean
+       *         // Is user restricted
+       *         restricted?: boolean
+       *         // The ID of the user's Authentication Source
+       *         source_id?: number
+       *         starred_repos_count?: number
+       *         // User visibility level option: public, limited, private
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
+       *         // the user's website
+       *         website?: string
+       *       }
+       *       // User represents a user
+       *       recipient?: {
+       *         // Is user active
+       *         active?: boolean
+       *         // URL to the user's avatar
+       *         avatar_url?: string
+       *         created?: string
+       *         // the user's description
+       *         description?: string
+       *         email?: string
+       *         // user counts
+       *         followers_count?: number
+       *         following_count?: number
+       *         // the user's full name
+       *         full_name?: string
+       *         // URL to the user's gitea page
+       *         html_url?: string
+       *         // the user's id
+       *         id?: number
+       *         // Is the user an administrator
+       *         is_admin?: boolean
+       *         // User locale
+       *         language?: string
+       *         last_login?: string
+       *         // the user's location
+       *         location?: string
+       *         // login of the user, same as `username`
+       *         login?: string
+       *         // identifier of the user, provided by the external authenticator (if configured)
+       *         login_name?: string
+       *         // Is user login prohibited
+       *         prohibit_login?: boolean
+       *         // Is user restricted
+       *         restricted?: boolean
+       *         // The ID of the user's Authentication Source
+       *         source_id?: number
+       *         starred_repos_count?: number
+       *         // User visibility level option: public, limited, private
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
+       *         // the user's website
+       *         website?: string
+       *       }
+       *       // [items] start
+       *       // Team represents a team in an organization
+       *       // [items] end
+       *       teams?: Array<{
+       *         // Whether the team can create repositories in the organization
+       *         can_create_org_repo?: boolean
+       *         // The description of the team
+       *         description?: string
+       *         // The unique identifier of the team
+       *         id?: number
+       *         // Whether the team has access to all repositories in the organization
+       *         includes_all_repositories?: boolean
+       *         // The name of the team
+       *         name?: string
+       *         // Organization represents an organization
+       *         organization?: {
+       *           // The URL of the organization's avatar
+       *           avatar_url?: string
+       *           // The description of the organization
+       *           description?: string
+       *           // The email address of the organization
+       *           email?: string
+       *           // The full display name of the organization
+       *           full_name?: string
+       *           // The unique identifier of the organization
+       *           id?: number
+       *           // The location of the organization
+       *           location?: string
+       *           // The name of the organization
+       *           name?: string
+       *           // Whether repository administrators can change team access
+       *           repo_admin_change_team_access?: boolean
+       *           // username of the organization
+       *           // deprecated
+       *           username?: string
+       *           // The visibility level of the organization (public, limited, private)
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
+       *           // The website URL of the organization
+       *           website?: string
+       *         }
+       *         permission?: 'none' | 'read' | 'write' | 'admin' | 'owner'
+       *         // [items] start
+       *         // [items] end
+       *         units?: string[]
+       *         units_map?: Record<string, string>
+       *       }>
+       *     }
+       *     size?: number
+       *     ssh_url?: string
+       *     stars_count?: number
+       *     template?: boolean
+       *     // [items] start
+       *     // [items] end
+       *     topics?: string[]
+       *     updated_at?: string
+       *     url?: string
+       *     watchers_count?: number
+       *     website?: string
+       *   }
+       *   repository_id?: number
+       *   // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *   // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *   // and indicates no corresponding /attempts/{n} resource is available.
+       *   run_attempt?: number
+       *   run_number?: number
+       *   started_at?: string
+       *   status?: string
+       *   // User represents a user
+       *   trigger_actor?: {
+       *     // Is user active
+       *     active?: boolean
+       *     // URL to the user's avatar
+       *     avatar_url?: string
+       *     created?: string
+       *     // the user's description
+       *     description?: string
+       *     email?: string
+       *     // user counts
+       *     followers_count?: number
+       *     following_count?: number
+       *     // the user's full name
+       *     full_name?: string
+       *     // URL to the user's gitea page
+       *     html_url?: string
+       *     // the user's id
+       *     id?: number
+       *     // Is the user an administrator
+       *     is_admin?: boolean
+       *     // User locale
+       *     language?: string
+       *     last_login?: string
+       *     // the user's location
+       *     location?: string
+       *     // login of the user, same as `username`
+       *     login?: string
+       *     // identifier of the user, provided by the external authenticator (if configured)
+       *     login_name?: string
+       *     // Is user login prohibited
+       *     prohibit_login?: boolean
+       *     // Is user restricted
+       *     restricted?: boolean
+       *     // The ID of the user's Authentication Source
+       *     source_id?: number
+       *     starred_repos_count?: number
+       *     // User visibility level option: public, limited, private
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
+       *     // the user's website
+       *     website?: string
+       *   }
+       *   url?: string
+       * }
+       * ```
+       */
+      getWorkflowRunAttempt<
+        Config extends Alova2MethodConfig<ActionWorkflowRun> & {
+          pathParams: {
+            /**
+             * owner of the repo
+             */
+            owner: string;
+            /**
+             * name of the repository
+             */
+            repo: string;
+            /**
+             * id of the run
+             */
+            run: number;
+            /**
+             * logical attempt number of the run
+             */
+            attempt: number;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<ActionWorkflowRun, 'repository.getWorkflowRunAttempt', Config>;
+      /**
+       * ---
+       *
+       * [GET] Lists all jobs for a workflow run attempt
+       *
+       * **path:** /repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt}/jobs
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {
+       *   // owner of the repo
+       *   owner: string
+       *   // name of the repository
+       *   repo: string
+       *   // id of the workflow run
+       *   run: number
+       *   // logical attempt number of the run
+       *   attempt: number
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Query Parameters**
+       * ```ts
+       * type QueryParameters = {
+       *   // workflow status (pending, queued, in_progress, failure, success, skipped)
+       *   status?: string
+       *   // page number of results to return (1-based)
+       *   page?: number
+       *   // page size of results
+       *   limit?: number
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = {
+       *   // [items] start
+       *   // ActionWorkflowJob represents a WorkflowJob
+       *   // [items] end
+       *   jobs?: Array<{
+       *     completed_at?: string
+       *     conclusion?: string
+       *     created_at?: string
+       *     head_branch?: string
+       *     head_sha?: string
+       *     html_url?: string
+       *     id?: number
+       *     // [items] start
+       *     // [items] end
+       *     labels?: string[]
+       *     name?: string
+       *     run_attempt?: number
+       *     run_id?: number
+       *     run_url?: string
+       *     runner_id?: number
+       *     runner_name?: string
+       *     started_at?: string
+       *     status?: string
+       *     // [items] start
+       *     // ActionWorkflowStep represents a step of a WorkflowJob
+       *     // [items] end
+       *     steps?: Array<{
+       *       completed_at?: string
+       *       conclusion?: string
+       *       name?: string
+       *       number?: number
+       *       started_at?: string
+       *       status?: string
+       *     }>
+       *     url?: string
+       *   }>
+       *   total_count?: number
+       * }
+       * ```
+       */
+      listWorkflowRunAttemptJobs<
+        Config extends Alova2MethodConfig<ActionWorkflowJobsResponse> & {
+          pathParams: {
+            /**
+             * owner of the repo
+             */
+            owner: string;
+            /**
+             * name of the repository
+             */
+            repo: string;
+            /**
+             * id of the workflow run
+             */
+            run: number;
+            /**
+             * logical attempt number of the run
+             */
+            attempt: number;
+          };
+          params: {
+            /**
+             * workflow status (pending, queued, in_progress, failure, success, skipped)
+             */
+            status?: string;
+            /**
+             * page number of results to return (1-based)
+             */
+            page?: number;
+            /**
+             * page size of results
+             */
+            limit?: number;
+          };
+        }
+      >(
+        config: Config
+      ): Alova2Method<ActionWorkflowJobsResponse, 'repository.listWorkflowRunAttemptJobs', Config>;
+      /**
+       * ---
+       *
        * [GET] Lists all jobs for a workflow run
        *
        * **path:** /repos/{owner}/{repo}/actions/runs/{run}/jobs
@@ -34089,6 +36523,10 @@ declare global {
        *   page?: number
        *   // page size of results
        *   limit?: number
+       *   // sort jobs by attribute. Supported values are "id". Default is "id"
+       *   sort?: string
+       *   // sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+       *   order?: string
        * }
        * ```
        *
@@ -34165,6 +36603,14 @@ declare global {
              * page size of results
              */
             limit?: number;
+            /**
+             * sort jobs by attribute. Supported values are "id". Default is "id"
+             */
+            sort?: string;
+            /**
+             * sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+             */
+            order?: string;
           };
         }
       >(
@@ -34319,7 +36765,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -34333,6 +36782,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -34349,6 +36799,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -34399,9 +36850,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -34444,7 +36898,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -34499,7 +36956,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -34541,7 +37001,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -34581,7 +37044,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -34608,11 +37074,15 @@ declare global {
        *   html_url?: string
        *   id?: number
        *   path?: string
+       *   // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *   // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *   previous_attempt_url?: string
        *   // Repository represents a repository
        *   repository?: {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -34629,6 +37099,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -34679,9 +37150,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -34724,7 +37198,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -34779,7 +37256,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -34821,7 +37301,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -34861,7 +37344,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -34885,6 +37371,9 @@ declare global {
        *     website?: string
        *   }
        *   repository_id?: number
+       *   // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *   // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *   // and indicates no corresponding /attempts/{n} resource is available.
        *   run_attempt?: number
        *   run_number?: number
        *   started_at?: string
@@ -34927,7 +37416,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -35978,7 +38470,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -36059,7 +38554,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -36110,6 +38608,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -36126,6 +38625,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -36176,9 +38676,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -36221,7 +38724,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -36276,7 +38782,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -36318,7 +38827,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -36358,7 +38870,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -36544,7 +39059,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -36697,9 +39215,16 @@ declare global {
        *   block_on_rejected_reviews?: boolean
        *   // Deprecated: true
        *   branch_name?: string
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   created_at?: string
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -36794,8 +39319,15 @@ declare global {
        *   block_on_rejected_reviews?: boolean
        *   // Deprecated: true
        *   branch_name?: string
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -36852,9 +39384,16 @@ declare global {
        *   block_on_rejected_reviews?: boolean
        *   // Deprecated: true
        *   branch_name?: string
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   created_at?: string
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -37006,9 +39545,16 @@ declare global {
        *   block_on_rejected_reviews?: boolean
        *   // Deprecated: true
        *   branch_name?: string
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   created_at?: string
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -37155,8 +39701,15 @@ declare global {
        *   block_on_official_review_requests?: boolean
        *   block_on_outdated_branch?: boolean
        *   block_on_rejected_reviews?: boolean
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -37212,9 +39765,16 @@ declare global {
        *   block_on_rejected_reviews?: boolean
        *   // Deprecated: true
        *   branch_name?: string
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_teams?: string[]
+       *   // [items] start
+       *   // [items] end
+       *   bypass_allowlist_usernames?: string[]
        *   created_at?: string
        *   dismiss_stale_approvals?: boolean
        *   enable_approvals_whitelist?: boolean
+       *   enable_bypass_allowlist?: boolean
        *   enable_force_push?: boolean
        *   enable_force_push_allowlist?: boolean
        *   enable_merge_whitelist?: boolean
@@ -37918,7 +40478,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -38024,6 +40587,10 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
+       *   // Permission level to grant the collaborator
+       *   // read RepoWritePermissionRead
+       *   // write RepoWritePermissionWrite
+       *   // admin RepoWritePermissionAdmin
        *   permission?: 'read' | 'write' | 'admin'
        * }
        * ```
@@ -38131,7 +40698,12 @@ declare global {
        * ```ts
        * type Response = {
        *   // Permission level of the collaborator
-       *   permission?: string
+       *   // none AccessLevelNameNone
+       *   // read AccessLevelNameRead
+       *   // write AccessLevelNameWrite
+       *   // admin AccessLevelNameAdmin
+       *   // owner AccessLevelNameOwner
+       *   permission?: 'none' | 'read' | 'write' | 'admin' | 'owner'
        *   // RoleName is the name of the permission role
        *   role_name?: string
        *   // User represents a user
@@ -38172,7 +40744,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -38289,7 +40864,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -38381,7 +40959,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -38528,6 +41109,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -38544,6 +41126,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -38594,9 +41177,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -38639,7 +41225,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -38694,7 +41283,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -38736,7 +41328,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -38776,7 +41371,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -38855,7 +41453,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -38997,7 +41598,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -39127,7 +41731,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -39172,7 +41779,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -39187,6 +41797,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -39203,6 +41814,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -39253,9 +41865,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -39298,7 +41913,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -39353,7 +41971,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -39395,7 +42016,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -39435,7 +42059,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -39491,6 +42118,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -39507,6 +42135,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -39557,9 +42186,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -39602,7 +42234,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -39657,7 +42292,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -39699,7 +42337,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -39739,7 +42380,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -39837,7 +42481,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -39909,7 +42556,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -39950,7 +42600,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -40009,7 +42662,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -40104,7 +42760,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -40196,7 +42855,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -41944,6 +44606,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -41960,6 +44623,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -42010,9 +44674,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -42055,7 +44722,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -42110,7 +44780,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -42152,7 +44825,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -42192,7 +44868,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -42282,6 +44961,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -42298,6 +44978,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -42348,9 +45029,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -42393,7 +45077,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -42448,7 +45135,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -42490,7 +45180,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -42530,7 +45223,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -42713,7 +45409,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -42805,7 +45504,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -43015,7 +45717,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -43107,7 +45812,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -44416,7 +47124,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -44460,7 +47171,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -44515,6 +47229,28 @@ declare global {
        *   original_author?: string
        *   original_author_id?: number
        *   pin_order?: number
+       *   // [items] start
+       *   // Project represents a project
+       *   // [items] end
+       *   projects?: Array<{
+       *     closed_at?: string
+       *     created_at?: string
+       *     // CreatorID is the user who created the project
+       *     creator_id?: number
+       *     // Description provides details about the project
+       *     description?: string
+       *     // ID is the unique identifier for the project
+       *     id?: number
+       *     // IsClosed indicates if the project is closed
+       *     is_closed?: boolean
+       *     // OwnerID is the owner of the project (for org-level projects)
+       *     owner_id?: number
+       *     // RepoID is the repository this project belongs to (for repo-level projects)
+       *     repo_id?: number
+       *     // Title is the title of the project
+       *     title?: string
+       *     updated_at?: string
+       *   }>
        *   // PullRequestMeta PR info if an issue is a PR
        *   pull_request?: {
        *     draft?: boolean
@@ -44573,7 +47309,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -44652,6 +47391,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -44668,6 +47408,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -44718,9 +47459,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -44763,7 +47507,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -44818,7 +47565,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -44860,7 +47610,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -44900,7 +47653,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -45018,6 +47774,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -45034,6 +47791,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -45084,9 +47842,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -45129,7 +47890,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -45184,7 +47948,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -45226,7 +47993,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -45266,7 +48036,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -45355,6 +48128,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -45371,6 +48145,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -45421,9 +48196,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -45466,7 +48244,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -45521,7 +48302,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -45563,7 +48347,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -45603,7 +48390,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -46083,7 +48873,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -46128,7 +48921,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -46143,6 +48939,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -46159,6 +48956,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -46209,9 +49007,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -46254,7 +49055,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -46309,7 +49113,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -46351,7 +49158,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -46391,7 +49201,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -46447,6 +49260,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -46463,6 +49277,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -46513,9 +49328,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -46558,7 +49376,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -46613,7 +49434,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -46655,7 +49479,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -46695,7 +49522,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -46793,7 +49623,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -46865,7 +49698,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -46906,7 +49742,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -46965,7 +49804,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -47135,7 +49977,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -47180,7 +50025,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -47195,6 +50043,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -47211,6 +50060,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -47261,9 +50111,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -47306,7 +50159,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -47361,7 +50217,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -47403,7 +50262,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -47443,7 +50305,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -47499,6 +50364,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -47515,6 +50381,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -47565,9 +50432,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -47610,7 +50480,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -47665,7 +50538,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -47707,7 +50583,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -47747,7 +50626,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -47845,7 +50727,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -47917,7 +50802,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -47958,7 +50846,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -48017,7 +50908,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -48203,7 +51097,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -48248,7 +51145,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -48263,6 +51163,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -48279,6 +51180,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -48329,9 +51231,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -48374,7 +51279,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -48429,7 +51337,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -48471,7 +51382,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -48511,7 +51425,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -48567,6 +51484,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -48583,6 +51501,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -48633,9 +51552,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -48678,7 +51600,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -48733,7 +51658,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -48775,7 +51703,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -48815,7 +51746,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -48913,7 +51847,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -48985,7 +51922,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -49026,7 +51966,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -49085,7 +52028,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -49178,7 +52124,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -49223,7 +52172,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -49238,6 +52190,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -49254,6 +52207,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -49304,9 +52258,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -49349,7 +52306,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -49404,7 +52364,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -49446,7 +52409,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -49486,7 +52452,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -49542,6 +52511,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -49558,6 +52528,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -49608,9 +52579,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -49653,7 +52627,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -49708,7 +52685,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -49750,7 +52730,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -49790,7 +52773,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -49888,7 +52874,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -49960,7 +52949,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -50001,7 +52993,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -50060,7 +53055,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -50159,7 +53157,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -50204,7 +53205,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -50219,6 +53223,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -50235,6 +53240,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -50285,9 +53291,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -50330,7 +53339,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -50385,7 +53397,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -50427,7 +53442,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -50467,7 +53485,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -50523,6 +53544,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -50539,6 +53561,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -50589,9 +53612,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -50634,7 +53660,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -50689,7 +53718,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -50731,7 +53763,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -50771,7 +53806,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -50869,7 +53907,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -50941,7 +53982,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -50982,7 +54026,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -51041,7 +54088,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -51171,7 +54221,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -51216,7 +54269,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -51231,6 +54287,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -51247,6 +54304,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -51297,9 +54355,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -51342,7 +54403,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -51397,7 +54461,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -51439,7 +54506,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -51479,7 +54549,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -51535,6 +54608,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -51551,6 +54625,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -51601,9 +54676,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -51646,7 +54724,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -51701,7 +54782,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -51743,7 +54827,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -51783,7 +54870,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -51881,7 +54971,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -51953,7 +55046,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -51994,7 +55090,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -52053,7 +55152,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -52154,6 +55256,174 @@ declare global {
       /**
        * ---
        *
+       * [POST] Reply to a pull request review comment
+       *
+       * **path:** /repos/{owner}/{repo}/pulls/{index}/comments/{id}/replies
+       *
+       * ---
+       *
+       * **Path Parameters**
+       * ```ts
+       * type PathParameters = {
+       *   // owner of the repo
+       *   owner: string
+       *   // name of the repo
+       *   repo: string
+       *   // index of the pull request
+       *   index: number
+       *   // id of the review comment to reply to
+       *   id: number
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **RequestBody**
+       * ```ts
+       * type RequestBody = {
+       *   body?: string
+       * }
+       * ```
+       *
+       * ---
+       *
+       * **Response**
+       * ```ts
+       * type Response = {
+       *   body?: string
+       *   commit_id?: string
+       *   created_at?: string
+       *   diff_hunk?: string
+       *   html_url?: string
+       *   id?: number
+       *   original_commit_id?: string
+       *   original_position?: number
+       *   path?: string
+       *   position?: number
+       *   pull_request_review_id?: number
+       *   pull_request_url?: string
+       *   // User represents a user
+       *   resolver?: {
+       *     // Is user active
+       *     active?: boolean
+       *     // URL to the user's avatar
+       *     avatar_url?: string
+       *     created?: string
+       *     // the user's description
+       *     description?: string
+       *     email?: string
+       *     // user counts
+       *     followers_count?: number
+       *     following_count?: number
+       *     // the user's full name
+       *     full_name?: string
+       *     // URL to the user's gitea page
+       *     html_url?: string
+       *     // the user's id
+       *     id?: number
+       *     // Is the user an administrator
+       *     is_admin?: boolean
+       *     // User locale
+       *     language?: string
+       *     last_login?: string
+       *     // the user's location
+       *     location?: string
+       *     // login of the user, same as `username`
+       *     login?: string
+       *     // identifier of the user, provided by the external authenticator (if configured)
+       *     login_name?: string
+       *     // Is user login prohibited
+       *     prohibit_login?: boolean
+       *     // Is user restricted
+       *     restricted?: boolean
+       *     // The ID of the user's Authentication Source
+       *     source_id?: number
+       *     starred_repos_count?: number
+       *     // User visibility level option: public, limited, private
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
+       *     // the user's website
+       *     website?: string
+       *   }
+       *   updated_at?: string
+       *   // User represents a user
+       *   user?: {
+       *     // Is user active
+       *     active?: boolean
+       *     // URL to the user's avatar
+       *     avatar_url?: string
+       *     created?: string
+       *     // the user's description
+       *     description?: string
+       *     email?: string
+       *     // user counts
+       *     followers_count?: number
+       *     following_count?: number
+       *     // the user's full name
+       *     full_name?: string
+       *     // URL to the user's gitea page
+       *     html_url?: string
+       *     // the user's id
+       *     id?: number
+       *     // Is the user an administrator
+       *     is_admin?: boolean
+       *     // User locale
+       *     language?: string
+       *     last_login?: string
+       *     // the user's location
+       *     location?: string
+       *     // login of the user, same as `username`
+       *     login?: string
+       *     // identifier of the user, provided by the external authenticator (if configured)
+       *     login_name?: string
+       *     // Is user login prohibited
+       *     prohibit_login?: boolean
+       *     // Is user restricted
+       *     restricted?: boolean
+       *     // The ID of the user's Authentication Source
+       *     source_id?: number
+       *     starred_repos_count?: number
+       *     // User visibility level option: public, limited, private
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
+       *     // the user's website
+       *     website?: string
+       *   }
+       * }
+       * ```
+       */
+      repoCreatePullReviewCommentReply<
+        Config extends Alova2MethodConfig<PullReviewComment> & {
+          pathParams: {
+            /**
+             * owner of the repo
+             */
+            owner: string;
+            /**
+             * name of the repo
+             */
+            repo: string;
+            /**
+             * index of the pull request
+             */
+            index: number;
+            /**
+             * id of the review comment to reply to
+             */
+            id: number;
+          };
+          data: CreatePullReviewCommentReplyOptions;
+        }
+      >(
+        config: Config
+      ): Alova2Method<PullReviewComment, 'repository.repoCreatePullReviewCommentReply', Config>;
+      /**
+       * ---
+       *
        * [GET] Get commits for a pull request
        *
        * **path:** /repos/{owner}/{repo}/pulls/{index}/commits
@@ -52231,7 +55501,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -52323,7 +55596,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -52580,13 +55856,13 @@ declare global {
        * **RequestBody**
        * ```ts
        * type RequestBody = {
-       *   Do: 'merge' | 'rebase' | 'rebase-merge' | 'squash' | 'fast-forward-only' | 'manually-merged'
-       *   MergeCommitID?: string
-       *   MergeMessageField?: string
-       *   MergeTitleField?: string
        *   delete_branch_after_merge?: boolean
+       *   do: 'merge' | 'rebase' | 'rebase-merge' | 'squash' | 'fast-forward-only' | 'manually-merged'
        *   force_merge?: boolean
        *   head_commit_id?: string
+       *   merge_commit_id?: string
+       *   merge_message_field?: string
+       *   merge_title_field?: string
        *   merge_when_checks_succeed?: boolean
        * }
        * ```
@@ -52754,7 +56030,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -52803,7 +56082,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -52979,7 +56261,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -53028,7 +56313,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53068,7 +56356,7 @@ declare global {
       /**
        * ---
        *
-       * [POST] Create a review to an pull request
+       * [POST] Create a review to a pull request
        *
        * **path:** /repos/{owner}/{repo}/pulls/{index}/reviews
        *
@@ -53161,7 +56449,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -53210,7 +56501,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53313,7 +56607,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -53362,7 +56659,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53396,7 +56696,7 @@ declare global {
       /**
        * ---
        *
-       * [POST] Submit a pending review to an pull request
+       * [POST] Submit a pending review to a pull request
        *
        * **path:** /repos/{owner}/{repo}/pulls/{index}/reviews/{id}
        *
@@ -53478,7 +56778,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -53527,7 +56830,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53691,7 +56997,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53734,7 +57043,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -53850,7 +57162,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -53899,7 +57214,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -54006,7 +57324,10 @@ declare global {
        *       // deprecated
        *       username?: string
        *       // The visibility level of the organization (public, limited, private)
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // The website URL of the organization
        *       website?: string
        *     }
@@ -54055,7 +57376,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -54619,7 +57943,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -54788,7 +58115,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -54919,7 +58249,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -55051,7 +58384,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -55235,7 +58571,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -55439,7 +58778,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -55910,7 +59252,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -56088,7 +59433,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -56203,7 +59551,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -56354,7 +59705,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -56471,7 +59825,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -57310,7 +60667,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -57396,7 +60756,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -57627,7 +60990,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -57671,7 +61037,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -57726,6 +61095,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -57784,7 +61175,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -57925,7 +61319,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -57969,7 +61366,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -58024,6 +61424,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -58082,7 +61504,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -58378,6 +61803,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -58394,6 +61820,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -58444,9 +61871,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -58489,7 +61919,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -58544,7 +61977,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -58586,7 +62022,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -58626,7 +62065,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -58695,6 +62137,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -58711,6 +62154,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -58761,9 +62205,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -58806,7 +62253,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -58861,7 +62311,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -58903,7 +62356,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -58943,7 +62399,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -59011,6 +62470,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -59027,6 +62487,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -59077,9 +62538,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -59122,7 +62586,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -59177,7 +62644,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -59219,7 +62689,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -59259,7 +62732,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -59875,6 +63351,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -59891,6 +63368,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -59941,9 +63419,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -59986,7 +63467,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -60041,7 +63525,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60083,7 +63570,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60123,7 +63613,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -60190,6 +63683,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -60206,6 +63700,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -60256,9 +63751,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -60301,7 +63799,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -60356,7 +63857,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60398,7 +63902,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60438,7 +63945,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -60561,6 +64071,8 @@ declare global {
        *   // Name of the repository to create
        *   name: string
        *   // ObjectFormatName of the underlying git repository, empty string for default (sha1)
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   // Whether the repository is private
        *   private?: boolean
@@ -60581,6 +64093,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -60597,6 +64110,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -60647,9 +64161,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -60692,7 +64209,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -60747,7 +64267,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60789,7 +64312,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -60829,7 +64355,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -61025,7 +64554,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }
@@ -61052,6 +64584,10 @@ declare global {
        *   page?: number
        *   // page size of results
        *   limit?: number
+       *   // sort jobs by attribute. Supported values are "id". Default is "id"
+       *   sort?: string
+       *   // sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+       *   order?: string
        * }
        * ```
        *
@@ -61114,6 +64650,14 @@ declare global {
              * page size of results
              */
             limit?: number;
+            /**
+             * sort jobs by attribute. Supported values are "id". Default is "id"
+             */
+            sort?: string;
+            /**
+             * sort order, either "asc" (ascending) or "desc" (descending). Default is "asc"
+             */
+            order?: string;
           };
         }
       >(
@@ -61179,7 +64723,7 @@ declare global {
       /**
        * ---
        *
-       * [POST] Get an user's actions runner registration token
+       * [POST] Get a user's actions runner registration token
        *
        * **path:** /user/actions/runners/registration-token
        *
@@ -61418,7 +64962,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -61432,6 +64979,7 @@ declare global {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -61448,6 +64996,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -61498,9 +65047,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -61543,7 +65095,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -61598,7 +65153,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -61640,7 +65198,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -61680,7 +65241,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -61707,11 +65271,15 @@ declare global {
        *     html_url?: string
        *     id?: number
        *     path?: string
+       *     // PreviousAttemptURL is the API URL of the previous attempt of this run, e.g. ".../actions/runs/{run_id}/attempts/{attempt-1}".
+       *     // It is set only when the current attempt is > 1 (i.e. a rerun). For the first attempt, or for legacy runs that pre-date ActionRunAttempt, it is null.
+       *     previous_attempt_url?: string
        *     // Repository represents a repository
        *     repository?: {
        *       allow_fast_forward_only_merge?: boolean
        *       allow_manual_merge?: boolean
        *       allow_merge_commits?: boolean
+       *       allow_merge_update?: boolean
        *       allow_rebase?: boolean
        *       allow_rebase_explicit?: boolean
        *       allow_rebase_update?: boolean
@@ -61728,6 +65296,7 @@ declare global {
        *       default_delete_branch_after_merge?: boolean
        *       default_merge_style?: string
        *       default_target_branch?: string
+       *       default_update_style?: string
        *       description?: string
        *       empty?: boolean
        *       // ExternalTracker represents settings for external tracker
@@ -61778,9 +65347,12 @@ declare global {
        *       link?: string
        *       mirror?: boolean
        *       mirror_interval?: string
+       *       mirror_last_sync_at?: string
        *       mirror_updated?: string
        *       name?: string
        *       // ObjectFormatName of the underlying git repository
+       *       // sha1 ObjectFormatSHA1
+       *       // sha256 ObjectFormatSHA256
        *       object_format_name?: 'sha1' | 'sha256'
        *       open_issues_count?: number
        *       open_pr_counter?: number
@@ -61823,7 +65395,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -61878,7 +65453,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -61920,7 +65498,10 @@ declare global {
        *           source_id?: number
        *           starred_repos_count?: number
        *           // User visibility level option: public, limited, private
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // the user's website
        *           website?: string
        *         }
@@ -61960,7 +65541,10 @@ declare global {
        *             // deprecated
        *             username?: string
        *             // The visibility level of the organization (public, limited, private)
-       *             visibility?: string
+       *             // public UserVisibilityPublic
+       *             // limited UserVisibilityLimited
+       *             // private UserVisibilityPrivate
+       *             visibility?: 'public' | 'limited' | 'private'
        *             // The website URL of the organization
        *             website?: string
        *           }
@@ -61984,6 +65568,9 @@ declare global {
        *       website?: string
        *     }
        *     repository_id?: number
+       *     // RunAttempt is 1-based for runs created after ActionRunAttempt was introduced.
+       *     // A value of 0 is a legacy-only sentinel for runs created before attempts existed
+       *     // and indicates no corresponding /attempts/{n} resource is available.
        *     run_attempt?: number
        *     run_number?: number
        *     started_at?: string
@@ -62026,7 +65613,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -62784,7 +66374,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -63093,7 +66686,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -63175,7 +66771,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -64022,7 +67621,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -64130,7 +67732,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -64221,7 +67826,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -64303,6 +67911,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -64319,6 +67928,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -64369,9 +67979,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -64414,7 +68027,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -64469,7 +68085,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -64511,7 +68130,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -64551,7 +68173,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -64619,6 +68244,8 @@ declare global {
        *   // Name of the repository to create
        *   name: string
        *   // ObjectFormatName of the underlying git repository, empty string for default (sha1)
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   // Whether the repository is private
        *   private?: boolean
@@ -64639,6 +68266,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -64655,6 +68283,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -64705,9 +68334,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -64750,7 +68382,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -64805,7 +68440,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -64847,7 +68485,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -64887,7 +68528,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -65024,6 +68668,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -65040,6 +68685,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -65090,9 +68736,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -65135,7 +68784,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -65190,7 +68842,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -65232,7 +68887,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -65272,7 +68930,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -65522,6 +69183,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -65538,6 +69200,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -65588,9 +69251,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -65633,7 +69299,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -65688,7 +69357,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -65730,7 +69402,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -65770,7 +69445,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -65867,7 +69545,10 @@ declare global {
        *     // deprecated
        *     username?: string
        *     // The visibility level of the organization (public, limited, private)
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // The website URL of the organization
        *     website?: string
        *   }
@@ -65984,7 +69665,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -66028,7 +69712,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }>
@@ -66083,6 +69770,28 @@ declare global {
        *     original_author?: string
        *     original_author_id?: number
        *     pin_order?: number
+       *     // [items] start
+       *     // Project represents a project
+       *     // [items] end
+       *     projects?: Array<{
+       *       closed_at?: string
+       *       created_at?: string
+       *       // CreatorID is the user who created the project
+       *       creator_id?: number
+       *       // Description provides details about the project
+       *       description?: string
+       *       // ID is the unique identifier for the project
+       *       id?: number
+       *       // IsClosed indicates if the project is closed
+       *       is_closed?: boolean
+       *       // OwnerID is the owner of the project (for org-level projects)
+       *       owner_id?: number
+       *       // RepoID is the repository this project belongs to (for repo-level projects)
+       *       repo_id?: number
+       *       // Title is the title of the project
+       *       title?: string
+       *       updated_at?: string
+       *     }>
        *     // PullRequestMeta PR info if an issue is a PR
        *     pull_request?: {
        *       draft?: boolean
@@ -66141,7 +69850,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -66249,7 +69961,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }>
@@ -66349,7 +70064,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }
@@ -66443,7 +70161,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -66524,7 +70245,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -66575,6 +70299,7 @@ declare global {
        *     allow_fast_forward_only_merge?: boolean
        *     allow_manual_merge?: boolean
        *     allow_merge_commits?: boolean
+       *     allow_merge_update?: boolean
        *     allow_rebase?: boolean
        *     allow_rebase_explicit?: boolean
        *     allow_rebase_update?: boolean
@@ -66591,6 +70316,7 @@ declare global {
        *     default_delete_branch_after_merge?: boolean
        *     default_merge_style?: string
        *     default_target_branch?: string
+       *     default_update_style?: string
        *     description?: string
        *     empty?: boolean
        *     // ExternalTracker represents settings for external tracker
@@ -66641,9 +70367,12 @@ declare global {
        *     link?: string
        *     mirror?: boolean
        *     mirror_interval?: string
+       *     mirror_last_sync_at?: string
        *     mirror_updated?: string
        *     name?: string
        *     // ObjectFormatName of the underlying git repository
+       *     // sha1 ObjectFormatSHA1
+       *     // sha256 ObjectFormatSHA256
        *     object_format_name?: 'sha1' | 'sha256'
        *     open_issues_count?: number
        *     open_pr_counter?: number
@@ -66686,7 +70415,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -66741,7 +70473,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -66783,7 +70518,10 @@ declare global {
        *         source_id?: number
        *         starred_repos_count?: number
        *         // User visibility level option: public, limited, private
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // the user's website
        *         website?: string
        *       }
@@ -66823,7 +70561,10 @@ declare global {
        *           // deprecated
        *           username?: string
        *           // The visibility level of the organization (public, limited, private)
-       *           visibility?: string
+       *           // public UserVisibilityPublic
+       *           // limited UserVisibilityLimited
+       *           // private UserVisibilityPrivate
+       *           visibility?: 'public' | 'limited' | 'private'
        *           // The website URL of the organization
        *           website?: string
        *         }
@@ -66953,7 +70694,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -67051,7 +70795,10 @@ declare global {
        *   source_id?: number
        *   starred_repos_count?: number
        *   // User visibility level option: public, limited, private
-       *   visibility?: string
+       *   // public UserVisibilityPublic
+       *   // limited UserVisibilityLimited
+       *   // private UserVisibilityPrivate
+       *   visibility?: 'public' | 'limited' | 'private'
        *   // the user's website
        *   website?: string
        * }>
@@ -67346,7 +71093,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -67416,6 +71166,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -67432,6 +71183,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -67482,9 +71234,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -67527,7 +71282,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -67582,7 +71340,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -67624,7 +71385,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -67664,7 +71428,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -67748,6 +71515,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -67764,6 +71532,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -67814,9 +71583,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -67859,7 +71631,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -67914,7 +71689,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -67956,7 +71734,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -67996,7 +71777,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }
@@ -68080,6 +71864,7 @@ declare global {
        *   allow_fast_forward_only_merge?: boolean
        *   allow_manual_merge?: boolean
        *   allow_merge_commits?: boolean
+       *   allow_merge_update?: boolean
        *   allow_rebase?: boolean
        *   allow_rebase_explicit?: boolean
        *   allow_rebase_update?: boolean
@@ -68096,6 +71881,7 @@ declare global {
        *   default_delete_branch_after_merge?: boolean
        *   default_merge_style?: string
        *   default_target_branch?: string
+       *   default_update_style?: string
        *   description?: string
        *   empty?: boolean
        *   // ExternalTracker represents settings for external tracker
@@ -68146,9 +71932,12 @@ declare global {
        *   link?: string
        *   mirror?: boolean
        *   mirror_interval?: string
+       *   mirror_last_sync_at?: string
        *   mirror_updated?: string
        *   name?: string
        *   // ObjectFormatName of the underlying git repository
+       *   // sha1 ObjectFormatSHA1
+       *   // sha256 ObjectFormatSHA256
        *   object_format_name?: 'sha1' | 'sha256'
        *   open_issues_count?: number
        *   open_pr_counter?: number
@@ -68191,7 +71980,10 @@ declare global {
        *     source_id?: number
        *     starred_repos_count?: number
        *     // User visibility level option: public, limited, private
-       *     visibility?: string
+       *     // public UserVisibilityPublic
+       *     // limited UserVisibilityLimited
+       *     // private UserVisibilityPrivate
+       *     visibility?: 'public' | 'limited' | 'private'
        *     // the user's website
        *     website?: string
        *   }
@@ -68246,7 +72038,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -68288,7 +72083,10 @@ declare global {
        *       source_id?: number
        *       starred_repos_count?: number
        *       // User visibility level option: public, limited, private
-       *       visibility?: string
+       *       // public UserVisibilityPublic
+       *       // limited UserVisibilityLimited
+       *       // private UserVisibilityPrivate
+       *       visibility?: 'public' | 'limited' | 'private'
        *       // the user's website
        *       website?: string
        *     }
@@ -68328,7 +72126,10 @@ declare global {
        *         // deprecated
        *         username?: string
        *         // The visibility level of the organization (public, limited, private)
-       *         visibility?: string
+       *         // public UserVisibilityPublic
+       *         // limited UserVisibilityLimited
+       *         // private UserVisibilityPrivate
+       *         visibility?: 'public' | 'limited' | 'private'
        *         // The website URL of the organization
        *         website?: string
        *       }

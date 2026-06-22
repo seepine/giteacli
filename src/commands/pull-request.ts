@@ -100,7 +100,7 @@ const PRSchema = z.object({
 const PRListSchema = z.array(PRSchema)
 
 export function createPullRequestCommand(cli: Cli) {
-  const prCli = cli.command('pr', 'pull request manager')
+  const prCli = cli.command('pr', 'Work with Gitea pull requests.')
 
   prCli.addCommand({
     command: 'list',

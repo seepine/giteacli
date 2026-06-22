@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Gitea API - version 1.26.0+dev-667-ge1f04b0d03
+ * Gitea API - version 1.26.0+dev-1029-gc1dc3907a7
  *
  * This documentation describes the Gitea API.
  *
@@ -110,6 +110,7 @@ export default {
   'organization.renameOrg': ['POST', '/orgs/{org}/rename'],
   'organization.orgListRepos': ['GET', '/orgs/{org}/repos'],
   'organization.createOrgRepo': ['POST', '/orgs/{org}/repos'],
+  'organization.orgDeleteRepos': ['DELETE', '/orgs/{org}/repos'],
   'organization.orgListTeams': ['GET', '/orgs/{org}/teams'],
   'organization.orgCreateTeam': ['POST', '/orgs/{org}/teams'],
   'organization.teamSearch': ['GET', '/orgs/{org}/teams/search'],
@@ -144,6 +145,8 @@ export default {
   'repository.GetWorkflowRun': ['GET', '/repos/{owner}/{repo}/actions/runs/{run}'],
   'repository.deleteActionRun': ['DELETE', '/repos/{owner}/{repo}/actions/runs/{run}'],
   'repository.getArtifactsOfRun': ['GET', '/repos/{owner}/{repo}/actions/runs/{run}/artifacts'],
+  'repository.getWorkflowRunAttempt': ['GET', '/repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt}'],
+  'repository.listWorkflowRunAttemptJobs': ['GET', '/repos/{owner}/{repo}/actions/runs/{run}/attempts/{attempt}/jobs'],
   'repository.listWorkflowRunJobs': ['GET', '/repos/{owner}/{repo}/actions/runs/{run}/jobs'],
   'repository.rerunWorkflowJob': ['POST', '/repos/{owner}/{repo}/actions/runs/{run}/jobs/{job_id}/rerun'],
   'repository.rerunWorkflowRun': ['POST', '/repos/{owner}/{repo}/actions/runs/{run}/rerun'],
@@ -319,6 +322,7 @@ export default {
   'repository.repoGetPullRequest': ['GET', '/repos/{owner}/{repo}/pulls/{index}'],
   'repository.repoEditPullRequest': ['PATCH', '/repos/{owner}/{repo}/pulls/{index}'],
   'repository.repoDownloadPullDiffOrPatch': ['GET', '/repos/{owner}/{repo}/pulls/{index}.{diffType}'],
+  'repository.repoCreatePullReviewCommentReply': ['POST', '/repos/{owner}/{repo}/pulls/{index}/comments/{id}/replies'],
   'repository.repoGetPullRequestCommits': ['GET', '/repos/{owner}/{repo}/pulls/{index}/commits'],
   'repository.repoGetPullRequestFiles': ['GET', '/repos/{owner}/{repo}/pulls/{index}/files'],
   'repository.repoPullRequestIsMerged': ['GET', '/repos/{owner}/{repo}/pulls/{index}/merge'],
