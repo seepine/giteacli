@@ -3,6 +3,8 @@ import fetchAdapter from 'alova/fetch'
 import { createApis, withConfigType } from './api/createApis'
 import { getConfig } from './config'
 import type {
+  ActionWorkflowJob,
+  ActionWorkflowRun,
   PullRequest,
   PullReview,
   PullReviewComment,
@@ -48,7 +50,6 @@ export class Gitea {
   }
 
   async getCurrentUserinfo(): Promise<User & { username: string }> {
-    this.Apis.repository.actions
     // @ts-ignore
     return this.Apis.user.userGetCurrent()
   }
@@ -431,4 +432,43 @@ export class Gitea {
   }
 
   getPullRequestCommentsByIndex = this.getIssueCommentsByIndex
+
+  async listActionRuns(
+    owner: string,
+    repo: string,
+    params?: {
+      status?: string
+      branch?: string
+      event?: string
+      head_sha?: string
+      actor?: string
+      page?: number
+      limit?: number
+    },
+  ): Promise<ActionWorkflowRun[]> {
+    const res = await this.Apis.repository.getWorkflowRuns({
+      pathParams: { owner, repo },
+      params: params ?? {},
+    })
+    return res.workflow_runs ?? []
+  }
+
+  async listActionRunJobs(
+    owner: string,
+    repo: string,
+    runId: number,
+    params?: { status?: string; page?: number; limit?: number },
+  ): Promise<ActionWorkflowJob[]> {
+    const res = await this.Apis.repository.listWorkflowRunJobs({
+      pathParams: { owner, repo, run: runId },
+      params: params ?? {},
+    })
+    return res.jobs ?? []
+  }
+
+  async getActionRunJob(owner: string, repo: string, jobId: number): Promise<ActionWorkflowJob> {
+    return this.Apis.repository.getWorkflowJob({
+      pathParams: { owner, repo, job_id: String(jobId) },
+    })
+  }
 }
