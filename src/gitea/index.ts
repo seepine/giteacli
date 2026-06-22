@@ -31,9 +31,7 @@ export class Gitea {
       requestAdapter: fetchAdapter(),
       cacheFor: null,
       beforeRequest: (method) => {
-        if (typeof method.config.params !== 'string') {
-          method.config.params.access_token = opts.token
-        }
+        method.config.headers['Authorization'] = `bearer ${opts.token}`
       },
       responded: async (res) => {
         if (res.status >= 400) {
@@ -50,6 +48,7 @@ export class Gitea {
   }
 
   async getCurrentUserinfo(): Promise<User & { username: string }> {
+    this.Apis.repository.actions
     // @ts-ignore
     return this.Apis.user.userGetCurrent()
   }
