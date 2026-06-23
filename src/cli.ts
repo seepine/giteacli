@@ -31,6 +31,18 @@ const unwrapZodType = (field: ZodType) => {
 const toOptionKey = (key: string): string =>
   key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 
+const formatError = (error: unknown): string => {
+  if (error instanceof z.ZodError) {
+    return error.issues
+      .map((issue) => {
+        const path = issue.path.length > 0 ? issue.path.join('.') : 'input'
+        return `${path}: ${issue.message}`
+      })
+      .join('; ')
+  }
+  return error instanceof Error ? error.message : String(error)
+}
+
 export class CliChild {
   constructor(protected program: Command) {}
 
@@ -78,43 +90,43 @@ export class CliChild {
       }
     }
     cmd.action(async (...allArgs) => {
-      let args: Record<string, any>
-      if (opts.paths && opts.paths.length > 0) {
-        args = allArgs[opts.paths.length]
-      } else {
-        args = allArgs[0] || {}
-      }
-      if (opts.paths) {
-        for (let i = 0; i < opts.paths.length; i++) {
-          if (allArgs[i] !== undefined) {
-            // @ts-ignore
-            args[opts.paths[i]] = allArgs[i]
-          }
-        }
-      }
-      // Coerce string values to numbers for number-typed fields
-      const coercedArgs: Record<string, unknown> = {}
-      for (const [key, field] of Object.entries(shape)) {
-        if (!(field instanceof ZodType)) {
-          continue
-        }
-        let zodType = unwrapZodType(field)
-        if (zodType.def.type === 'number') {
-          coercedArgs[key] = args[key] !== undefined ? Number(args[key]) : undefined
-        } else if (zodType.def.type === 'boolean') {
-          if (args[key] !== undefined) {
-            coercedArgs[key] =
-              args[key] === 'true' || args[key] === true || args[key] === 1 || args[key] === '1'
-          }
-        } else {
-          coercedArgs[key] = args[key]
-        }
-      }
-      const parsed = opts.inputSchema.safeParse(coercedArgs)
-      if (!parsed.success) {
-        throw parsed.error
-      }
       try {
+        let args: Record<string, any>
+        if (opts.paths && opts.paths.length > 0) {
+          args = allArgs[opts.paths.length]
+        } else {
+          args = allArgs[0] || {}
+        }
+        if (opts.paths) {
+          for (let i = 0; i < opts.paths.length; i++) {
+            if (allArgs[i] !== undefined) {
+              // @ts-ignore
+              args[opts.paths[i]] = allArgs[i]
+            }
+          }
+        }
+        // Coerce string values to numbers for number-typed fields
+        const coercedArgs: Record<string, unknown> = {}
+        for (const [key, field] of Object.entries(shape)) {
+          if (!(field instanceof ZodType)) {
+            continue
+          }
+          let zodType = unwrapZodType(field)
+          if (zodType.def.type === 'number') {
+            coercedArgs[key] = args[key] !== undefined ? Number(args[key]) : undefined
+          } else if (zodType.def.type === 'boolean') {
+            if (args[key] !== undefined) {
+              coercedArgs[key] =
+                args[key] === 'true' || args[key] === true || args[key] === 1 || args[key] === '1'
+            }
+          } else {
+            coercedArgs[key] = args[key]
+          }
+        }
+        const parsed = opts.inputSchema.safeParse(coercedArgs)
+        if (!parsed.success) {
+          throw parsed.error
+        }
         const res = await opts.func(parsed.data)
         if (!opts.outputSchema) {
           return
@@ -129,8 +141,8 @@ export class CliChild {
         } else {
           console.log(JSON.stringify(parsedRes.data, null, 2))
         }
-      } catch (e: any) {
-        console.error(`Command failed: ${typeof e.message === 'string' ? e.message : String(e)}`)
+      } catch (e) {
+        console.error(`Command failed: ${formatError(e)}`)
         process.exit(1)
       }
     })

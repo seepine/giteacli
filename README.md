@@ -142,14 +142,39 @@ giteacli pr reviewer del --repo <owner/repo> --index <index> --username <usernam
 giteacli pr reviewer review --repo <owner/repo> --index <index> --username <username>
 ```
 
+### Actions
+
+```bash
+# List action runs in a repository
+giteacli action list --repo <owner/repo>
+
+# Filter action runs
+giteacli action list --repo <owner/repo> --status success --branch main --event push
+
+# List jobs in an action run
+giteacli action job list --repo <owner/repo> --index <runId>
+
+# View an action job
+giteacli action job view --repo <owner/repo> --index <jobId>
+```
+
 ### Configuration
 
 ```bash
 # Set configuration values
 giteacli config set <key> <value>
 
+# Get a configuration value
+giteacli config get <key>
+
+# List configuration values
+giteacli config list
+
+# Unset a configuration value
+giteacli config unset <key>
+
 # Available keys: format
-# format: can be set to "toon" for pretty-printed output
+# format: json or toon
 ```
 
 ## Output Format
@@ -158,6 +183,30 @@ By default, output is JSON. You can set `format=toon` in config for pretty-print
 
 ```bash
 giteacli config set format toon
+```
+
+To switch back to JSON:
+
+```bash
+giteacli config set format json
+```
+
+## Pagination and Filters
+
+List commands support pagination with `--page` and `--limit` where available:
+
+```bash
+giteacli issue list --repo <owner/repo> --page 1 --limit 30
+giteacli pr list --repo <owner/repo> --state open --page 1 --limit 30
+giteacli action list --repo <owner/repo> --page 1 --limit 20
+```
+
+Boolean filters currently require an explicit value:
+
+```bash
+giteacli issue search --assigned true
+giteacli pr search --created false
+giteacli repo list --forked true
 ```
 
 ## License

@@ -22,7 +22,7 @@ src/
 ├── index.ts                    # CLI 入口（使用 commander）
 └── gitea/
     ├── index.ts                # Gitea 类 - 主要 API 封装
-    ├── config.ts               # 配置存储在 ~/.config/gitea-mcp/
+    ├── config.ts               # 配置存储在 ~/.config/giteacli/
     ├── api/
     │   ├── index.ts            # 默认导出的 alova Apis 实例
     │   ├── createApis.ts       # 创建类型化 API 代理的工厂函数
@@ -47,7 +47,7 @@ src/
 
 ### 配置存储
 
-凭证以加密形式存储在 `~/.config/gitea-mcp/config.json`。`src/gitea/config.ts` 中的 `saveConfig` 和 `loadConfig` 函数负责使用简单工具进行加解密。
+凭证以加密形式存储在 `~/.config/giteacli/config.json`。
 
 ## 注意
 

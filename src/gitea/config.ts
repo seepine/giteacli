@@ -1,6 +1,6 @@
 import { homedir } from 'os'
 import { join } from 'path'
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { encrypt, decrypt } from './utils/encrypt'
 
 const CONFIG_DIR = join(homedir(), '.config', 'giteacli')
@@ -47,6 +47,13 @@ export function setConfig(key: string, value: string): void {
   } else {
     raw[key] = value
   }
+  writeFileSync(CONFIG_FILE, JSON.stringify(raw, null, 2))
+}
+
+export function unsetConfig(key: string): void {
+  ensureConfigDir()
+  const raw = readRawConfig()
+  delete raw[key]
   writeFileSync(CONFIG_FILE, JSON.stringify(raw, null, 2))
 }
 

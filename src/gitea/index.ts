@@ -305,10 +305,7 @@ export class Gitea {
   ) {
     return this.Apis.repository.repoListPullRequests({
       pathParams: { owner, repo },
-      params: {
-        ...params,
-        poster: 'cto',
-      },
+      params: params ?? {},
     })
   }
 
