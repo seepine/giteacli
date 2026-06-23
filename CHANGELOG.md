@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.7](https://github.com/seepine/giteacli/compare/v0.1.6...v0.1.7) (2026-06-23)
+
+
+### Features
+
+* **actions:** add action run and job listing commands ([9920732](https://github.com/seepine/giteacli/commit/9920732b564a5cb96e6b0057a3acb6e69b4aa89b))
+* **auth:** switch from access_token query param to bearer header ([85b8001](https://github.com/seepine/giteacli/commit/85b8001aa369fbf4e104311da72cd42b5aa37fbd))
+* **config:** add get, list, unset subcommands and validate format values ([bca5909](https://github.com/seepine/giteacli/commit/bca59099493690fca31a4aca5dc2db9f94a1cc00))
+
 ## [0.1.6](https://github.com/seepine/giteacli/compare/v0.1.5...v0.1.6) (2026-04-21)
 
 
