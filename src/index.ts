@@ -7,6 +7,7 @@ import { createIssueCommand } from './commands/issue'
 import { createPullRequestCommand } from './commands/pull-request'
 import { createConfigCommand } from './commands/config'
 import { createActionCommand } from './commands/action'
+import { createOrgCommand } from './commands/org'
 import { Cli } from './cli'
 import z from 'zod'
 
@@ -57,6 +58,7 @@ cli.addCommand({
 })
 
 createRepoCommand(cli)
+createOrgCommand(cli)
 createIssueCommand(cli)
 createPullRequestCommand(cli)
 createActionCommand(cli)

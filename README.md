@@ -12,16 +12,6 @@ npm install -g @seepine/giteacli
 pnpm add -g @seepine/giteacli
 ```
 
-## Quick Start
-
-```bash
-# Login to your Gitea instance
-giteacli login --host <host> --token <token>
-
-# Check current user
-giteacli whoami
-```
-
 ## Commands
 
 ### Authentication
@@ -61,6 +51,24 @@ giteacli repo label edit --repo <owner/repo> --id <id>
 
 # Delete a label
 giteacli repo label del --repo <owner/repo> --id <id>
+```
+
+### Organization Management
+
+#### Organization Labels
+
+```bash
+# List labels in an organization
+giteacli org label list --org <org>
+
+# Create a new label
+giteacli org label add --org <org> --name <name> --color <color>
+
+# Edit a label
+giteacli org label edit --org <org> --id <id>
+
+# Delete a label
+giteacli org label del --org <org> --id <id>
 ```
 
 ### Issue Management

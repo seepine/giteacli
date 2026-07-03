@@ -135,6 +135,56 @@ export class Gitea {
     return labels
   }
 
+  async listOrgLabels(org: string, params?: { page?: number; limit?: number }) {
+    return this.Apis.organization.orgListLabels({
+      pathParams: { org },
+      params: params ?? {},
+    })
+  }
+
+  async createOrgLabel(org: string, data: { name: string; color: string; description?: string }) {
+    let _data = {
+      ...data,
+      name: data.name.trim(),
+      exclusive: false,
+    }
+    if (data.name.includes('/')) {
+      _data.exclusive = true
+    }
+    const labels = await this.listOrgLabels(org)
+    if (labels.findIndex((item) => item.name === _data.name) >= 0) {
+      throw new Error('Name has already been taken')
+    }
+    return this.Apis.organization.orgCreateLabel({ pathParams: { org }, data: _data })
+  }
+
+  async editOrgLabel(
+    org: string,
+    labelId: number,
+    data: { name?: string; color?: string; description?: string; exclusive?: boolean },
+  ) {
+    let _data = {
+      ...data,
+    }
+    if (_data.name) {
+      _data.name = _data.name.trim()
+      if (_data.name.includes('/')) {
+        _data.exclusive = true
+      } else {
+        _data.exclusive = false
+      }
+      const labels = await this.listOrgLabels(org)
+      if (labels.findIndex((item) => item.name === _data.name) >= 0) {
+        throw new Error('Name has already been taken')
+      }
+    }
+    return this.Apis.organization.orgEditLabel({ pathParams: { org, id: labelId }, data: _data })
+  }
+
+  async deleteOrgLabel(org: string, labelId: number) {
+    return this.Apis.organization.orgDeleteLabel({ pathParams: { org, id: labelId } })
+  }
+
   async createRepoLabel(
     owner: string,
     repo: string,
