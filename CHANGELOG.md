@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.8](https://github.com/seepine/giteacli/compare/v0.1.7...v0.1.8) (2026-07-03)
+
+
+### Features
+
+* **org:** add organization label management commands ([583be75](https://github.com/seepine/giteacli/commit/583be7581c3331fb2acc26218c9743cefb7dfc14))
+
 ## [0.1.7](https://github.com/seepine/giteacli/compare/v0.1.6...v0.1.7) (2026-06-23)
 
 
