@@ -60,6 +60,10 @@
     "tea",
     "cli"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seepine/giteacli.git"
+  },
   "author": "seepine",
   "license": "MIT",
   "exports": {
