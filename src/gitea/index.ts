@@ -285,7 +285,7 @@ export class Gitea {
     readme?: string
     default_branch?: string
   }) {
-    return this.Apis.repository.createCurrentUserRepo({ data })
+    return this.Apis.user.createCurrentUserRepo({ data })
   }
 
   async forkRepo(owner: string, repo: string, data?: { organization?: string }) {
