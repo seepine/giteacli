@@ -42,6 +42,11 @@ export class Gitea {
         if (res.status === 204) {
           return null
         }
+        // 非 JSON 响应（如 job logs 的纯文本日志）直接返回文本
+        const contentType = res.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          return await res.text()
+        }
         return await res.json()
       },
     })
@@ -513,9 +518,10 @@ export class Gitea {
     return res.jobs ?? []
   }
 
-  async getActionRunJob(owner: string, repo: string, jobId: number): Promise<ActionWorkflowJob> {
-    return this.Apis.repository.getWorkflowJob({
-      pathParams: { owner, repo, job_id: String(jobId) },
-    })
+  async getActionRunJobLogs(owner: string, repo: string, jobId: number): Promise<string> {
+    // 该接口返回纯文本日志，生成的类型未声明响应体，需要手动转换
+    return this.Apis.repository.downloadActionsRunJobLogs({
+      pathParams: { owner, repo, job_id: jobId },
+    }) as any
   }
 }

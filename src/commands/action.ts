@@ -6,7 +6,7 @@ import { parseRepoFullName } from './repo-full-name'
 const ActionStatusSchema = z.string().optional().describe('Filter by status')
 
 const ActionRunSchema = z.object({
-  id: z.number(),
+  id: z.number().optional(),
   display_title: z.string().optional(),
   path: z.string().optional(),
   event: z.string().optional(),
@@ -17,37 +17,17 @@ const ActionRunSchema = z.object({
   completed_at: z.string().optional(),
   html_url: z.string().optional(),
 
-  actor: z.object({
-    username: z.string(),
-    html_url: z.string(),
-  }),
+  actor: z
+    .object({
+      username: z.string().optional(),
+    })
+    .optional(),
 
-  trigger_actor: z.object({
-    username: z.string(),
-    html_url: z.string(),
-  }),
-
-  repository: z.object({
-    owner: z.object({
-      username: z.string(),
-      html_url: z.string(),
-    }),
-
-    name: z.string(),
-
-    full_name: z.string(),
-    description: z.string().optional(),
-
-    fork: z.boolean(),
-    mirror: z.boolean(),
-    private: z.boolean(),
-    empty: z.boolean(),
-    archived: z.boolean(),
-
-    default_branch: z.string(),
-
-    html_url: z.string(),
-  }),
+  trigger_actor: z
+    .object({
+      username: z.string().optional(),
+    })
+    .optional(),
 })
 
 const ActionJobSchema = z.object({
@@ -77,8 +57,16 @@ const ActionJobSchema = z.object({
     .optional(),
 })
 
-const ActionRunListSchema = z.array(ActionRunSchema)
-const ActionJobListSchema = z.array(ActionJobSchema)
+const ActionRunListSchema = z.array(
+  ActionRunSchema.extend({
+    _tips: z.string().optional(),
+  }),
+)
+const ActionJobListSchema = z.array(
+  ActionJobSchema.extend({
+    _tips: z.string().optional(),
+  }),
+)
 
 export function createActionCommand(cli: Cli) {
   const actionCli = cli.command('action', 'action manager')
@@ -91,7 +79,7 @@ export function createActionCommand(cli: Cli) {
       status: ActionStatusSchema,
       headSha: z.string().optional().describe('Filter by triggering sha'),
       page: z.number().optional().default(1).describe('Page number, default 1'),
-      limit: z.number().optional().default(20).describe('Items per page, default 20'),
+      limit: z.number().optional().default(5).describe('Items per page, default 5'),
       branch: z.string().optional().describe('Filter by branch'),
       event: z.string().optional().describe('Filter by event name'),
     }),
@@ -99,14 +87,20 @@ export function createActionCommand(cli: Cli) {
     async func({ repo, status, headSha, page, limit, branch, event }) {
       const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.listActionRuns(owner, repoName, {
+      const list = await gitea.listActionRuns(owner, repoName, {
         status,
         head_sha: headSha,
         page,
         limit,
         branch,
         event,
-      }) as any
+      })
+      return list.map((item: any) => {
+        return {
+          ...item,
+          _tips: `use \`giteacli action job list --repo ${repo} --run-id ${item.id}\` to see jobs`,
+        }
+      })
     },
   })
 
@@ -117,31 +111,37 @@ export function createActionCommand(cli: Cli) {
     description: 'List jobs of an action run',
     inputSchema: z.object({
       repo: z.string().describe('Repository full name, e.g. owner/repo'),
-      index: z.number().describe('Action run id'),
+      runId: z.number().describe('Action run id'),
       status: ActionStatusSchema,
       page: z.number().optional().default(1).describe('Page number, default 1'),
       limit: z.number().optional().default(20).describe('Items per page, default 20'),
     }),
     outputSchema: ActionJobListSchema,
-    async func({ repo, index, status, page, limit }) {
+    async func({ repo, runId, status, page, limit }) {
       const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.listActionRunJobs(owner, repoName, index, { status, page, limit }) as any
+      const list = await gitea.listActionRunJobs(owner, repoName, runId, { status, page, limit })
+      return list.map((item: any) => {
+        return {
+          ...item,
+          _tips: `use \`giteacli action job logs --repo ${repo} --job-id ${item.id}\` to see the job logs (all steps)`,
+        }
+      })
     },
   })
 
   jobCli.addCommand({
-    command: 'view',
-    description: 'View an action job by id',
+    command: 'logs',
+    description: 'View logs of an action job',
     inputSchema: z.object({
       repo: z.string().describe('Repository full name, e.g. owner/repo'),
-      index: z.number().describe('Action job id'),
+      jobId: z.number().describe('Action job id'),
     }),
-    outputSchema: ActionJobSchema,
-    async func({ repo, index }) {
+    outputSchema: z.string(),
+    async func({ repo, jobId }) {
       const { owner, repoName } = parseRepoFullName(repo)
       const gitea = new Gitea()
-      return gitea.getActionRunJob(owner, repoName, index) as any
+      return gitea.getActionRunJobLogs(owner, repoName, jobId)
     },
   })
 }

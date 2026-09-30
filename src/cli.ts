@@ -56,7 +56,7 @@ export class CliChild {
 
   addCommand<
     TInput extends z.ZodObject,
-    TOutput extends z.ZodObject | z.ZodArray | undefined,
+    TOutput extends z.ZodObject | z.ZodArray | z.ZodString | undefined,
   >(opts: {
     command: string
     paths?: string[]
@@ -135,6 +135,11 @@ export class CliChild {
         if (!parsedRes.success) {
           throw parsedRes.error
         }
+        // 字符串结果（如 job logs）直接原样输出，避免 JSON 转义
+        if (typeof parsedRes.data === 'string') {
+          console.log(parsedRes.data)
+          return
+        }
         const config = getConfig() as { format?: string }
         if (config?.format === 'toon') {
           console.log(encode(parsedRes.data))
@@ -171,7 +176,7 @@ export class Cli {
 
   addCommand<
     TInput extends z.ZodObject,
-    TOutput extends z.ZodObject | z.ZodArray | undefined,
+    TOutput extends z.ZodObject | z.ZodArray | z.ZodString | undefined,
   >(opts: {
     command: string
     description: string

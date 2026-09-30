@@ -160,10 +160,10 @@ giteacli action list --repo <owner/repo>
 giteacli action list --repo <owner/repo> --status success --branch main --event push
 
 # List jobs in an action run
-giteacli action job list --repo <owner/repo> --index <runId>
+giteacli action job list --repo <owner/repo> --run-id <runId>
 
-# View an action job
-giteacli action job view --repo <owner/repo> --index <jobId>
+# View logs of an action job, the output is the full log of the job (all steps)
+giteacli action job logs --repo <owner/repo> --job-id <jobId>
 ```
 
 ### Configuration
