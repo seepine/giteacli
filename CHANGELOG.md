@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.9](https://github.com/seepine/giteacli/compare/v0.1.8...v0.1.9) (2026-09-30)
+
+
+### Features
+
+* **action:** add job logs command with tips and text output ([b43e5c2](https://github.com/seepine/giteacli/commit/b43e5c2d659a44faaad4d96cb3a47d8b0fcc7a28))
+* **gitea/api:** update API definitions to Gitea 1.27.0 ([11c8cc9](https://github.com/seepine/giteacli/commit/11c8cc9133bf21eee913a7ab7c1eb903623b8805))
+
+
+### Bug Fixes
+
+* **gitea:** use user API to create current user repo ([5c33ce7](https://github.com/seepine/giteacli/commit/5c33ce780af270f6307810e6d6a3bd6e55d7873f))
+
 ## [0.1.8](https://github.com/seepine/giteacli/compare/v0.1.7...v0.1.8) (2026-07-03)
 
 
