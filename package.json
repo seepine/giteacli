@@ -10,6 +10,7 @@
     "check": "run-s check:*",
     "check:format": "prettier --check src/",
     "check:tsc": "tsc --noEmit",
+    "alova:gen": "alova:gen",
     "release": "pnpm check && commit-and-tag-version && git push --follow-tags"
   },
   "dependencies": {
@@ -20,7 +21,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@alova/wormhole": "^1.5.0",
+    "@alova/wormhole": "^1.5.2",
     "@types/node": "^24.12.2",
     "commit-and-tag-version": "^12.7.1",
     "npm-run-all2": "^8.0.4",
