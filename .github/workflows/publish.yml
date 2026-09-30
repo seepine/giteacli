@@ -1,5 +1,8 @@
-# 配置
-#   密钥 NPM_TOKEN
+# 使用 npm Trusted Publishing（OIDC），不再需要 NPM_TOKEN
+#   1. npm 包设置页 → Trusted Publisher → GitHub Actions
+#      Owner: seepine / Repository: giteacli / Workflow filename: publish.yml
+#      （若配置了 Environment，名称需与下面的 environment 一致）
+#   2. 需要 npm >= 11.5.1（Node 24 自带版本已满足）
 
 name: Publish
 
@@ -8,12 +11,12 @@ on:
     tags:
       - v*
 
-env:
-  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # 换取 OIDC 令牌，用于 Trusted Publishing 与自动 provenance
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,6 +27,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+          registry-url: 'https://registry.npmjs.org' # OIDC 流程需要
+          package-manager-cache: false # 发布构建禁用缓存
 
       - uses: pnpm/action-setup@v5
         name: Install pnpm
@@ -39,13 +44,5 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Authenticate with Registry
-        if: ${{ env.NPM_TOKEN !='' }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ./.npmrc
-          echo "git-checks=false" >> ./.npmrc
-          npm whoami
-
       - name: Publish to npm
-        if: ${{ env.NPM_TOKEN !='' }}
         run: npm publish
