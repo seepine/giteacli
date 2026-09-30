@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
- * Gitea API - version 1.26.0+dev-1029-gc1dc3907a7
+ * Gitea API - version 1.27.0+dev-955-g37488799e1
  *
  * This documentation describes the Gitea API.
  *
